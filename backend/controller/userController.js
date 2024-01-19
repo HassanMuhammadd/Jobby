@@ -2,8 +2,11 @@ const asynchandler = require('express-async-handler')
 const validator = require("validator");
 const user = require("../model/user")
 const bcrypt = require("bcrypt");
+const generate = require("../util/genToken")
+
 
 const signUp = asynchandler (async(req,res,next) => {
+   // console.log(req.file)
     const {name,email,password,retypePassword,phone,industry,location} = req.body;
     //   console.log(req.body);
       if((!name) || (!email) || (!password) || (!retypePassword) || (!phone) || (!industry) || (!location)){
@@ -24,7 +27,6 @@ const signUp = asynchandler (async(req,res,next) => {
       }
 
       const encryptedPassword = await bcrypt.hash(password,10);
- 
       const newUser = new user({
          name,
          email,
@@ -32,11 +34,14 @@ const signUp = asynchandler (async(req,res,next) => {
          retypePassword:encryptedPassword,
          phone,
          industry,
-         location
+         location,
+         // avatar:req.file.fieldname
       });
-      console.log(newUser)
+      const token = await generate({id:newUser._id})
+      newUser.token = token;
+      // console.log(newUser)
       
-      const retUser = await newUser.save();
+      const retUser = newUser.save();
       res.json({User : retUser}); 
 })
 
@@ -54,13 +59,38 @@ const signIn = asynchandler (async(req,res,next) => {
      if(!checkPassword){
        return res.json({error:"Password is not correct"});
      }
+     const token = await generate({id:retrieveUser._id});
+     retrieveUser.token = token;
+     retrieveUser.save();
      console.log("LoggedIn successfully")
      res.json({User:retrieveUser})
 })
+const changePassword = asynchandler(async(req,res)=>{
 
+   const {email, oldPassword, newPassword, confirmPassword} = req.body;
+   const fetchUser = await user.findOne({email});
+   if(!email || !validator.isEmail(email)){
+       return res.json({error:"Email is not found"});
+   } 
+   const password = fetchUser.password;
+   const checkPassword = await bcrypt.compare(oldPassword,password);
+   if(!checkPassword){
+      return res.json({error:"Old password is not correct"});
+   }
+   if(newPassword!==confirmPassword){
+      return res.json({error:"Oops! The passwords you entered don't match. Please try again"});
+   }
+   const updatedPassword = await bcrypt.hash(newPassword,10);
+   const confirmationPassword = await bcrypt.hash(confirmPassword,10);
+   fetchUser.password = updatedPassword;
+   fetchUser.retypePassword = confirmationPassword;
+   fetchUser.save()
+   res.json("updated successfully")
+})
 
 
 module.exports = {
     signUp,
-    signIn
+    signIn,
+    changePassword
 }

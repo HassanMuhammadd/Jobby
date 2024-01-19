@@ -38,6 +38,10 @@ const companySchema = new mongoose.Schema ({
     foundationYear: {
         type : Number,
         required : true
+    },
+    token:{
+        type : String,
+        required : true
     }
 },
    {

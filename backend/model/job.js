@@ -5,7 +5,8 @@ const jobSchema = new mongoose.Schema ({
                   status: {type:String, default:false}
                   }],
     companyId : {
-        type : Number,
+        type : mongoose.Schema.Types.ObjectId,
+        ref:"Company",
         required : true
     },
     name : {
