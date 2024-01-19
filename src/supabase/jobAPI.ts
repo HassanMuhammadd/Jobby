@@ -184,3 +184,13 @@ export async function deleteJob(id: number){
 		}
 }
 
+export async function updateJobEmployee(id: number, employee_id: number){
+		const {error} = await supabase
+		.from('job')
+		.update({employee_id})
+		.eq('id', id);
+		if(error){
+			console.error(error);
+			throw new Error(error.message);
+		}
+}

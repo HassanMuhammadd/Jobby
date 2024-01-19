@@ -5,12 +5,13 @@ import EditCompany from './EditCompany';
 import {getCompanyEmployees} from '../../supabase/companyAPI';
 import Employee from '../employees/Employee';
 import CompanyVacancies from './CompanyVacancies';
+import {useCompanies} from '../../contexts/CompaniesContext';
 
 export default function CompanyPersonalProfile() {
   const {company} = useAuth();
   const [employees, setEmployees] = useState<any[]>([]);
   const [isLoading,setIsloading] = useState(true);
-
+  const {showModal} = useCompanies();
   useEffect(()=>{
     async function fetchEmployees() {
       const res = await getCompanyEmployees(company.id as number);
@@ -21,7 +22,7 @@ export default function CompanyPersonalProfile() {
   },[company])
 
   return (
-    <main className='min-h-[calc(100vh-107px)] bg-stone-100 p-8 md:p-16'>
+    <main className={`min-h-[calc(100vh-107px)] bg-stone-100 p-8 md:p-16 ${showModal && 'opacity-50'}`}>
     <CompanyData company={company}/>
 	  <div className=' mt-6 flex flex-col gap-8 lg:flex-row justify-between items-center lg:items-start'>
 

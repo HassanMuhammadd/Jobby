@@ -5,12 +5,16 @@ import { FcCancel } from "react-icons/fc";
 import { GiConfirmed } from "react-icons/gi";
 import {updateApplication} from '../../supabase/applicationAPI';
 import {useQueryClient} from '@tanstack/react-query';
+import {updateJobEmployee} from '../../supabase/jobAPI';
+import {addCompanyEmployee} from '../../supabase/companyAPI';
+import {useAuth} from '../../contexts/AuthContext';
+
 export default function ApplicantCard({application}: {application: Application}) {
 	const [employee,setEmployee] = useState<Employee>({});
 	const [status,setStatus] = useState(application.status);
 	const [confirming,setConfirming] = useState(false);
+	const {company} = useAuth();
 	const client = useQueryClient();
-
 
 	useEffect(()=>{
 		async function fetchEmployee(){
@@ -22,7 +26,13 @@ export default function ApplicantCard({application}: {application: Application})
 
 	async function handleConfirmation(){
 		await updateApplication(application,status as string);
-		client.invalidateQueries({queryKey: ['applications']});
+		client.invalidateQueries({queryKey: ['applications','companies']});
+		if(status==='accepted')
+		{
+			//update job's assigned employee
+			updateJobEmployee(Number(application.job_id),Number(employee.id));
+			addCompanyEmployee(Number(company.id),Number(employee.id));
+		}
 		setConfirming(false);
 	}
 

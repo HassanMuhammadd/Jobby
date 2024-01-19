@@ -12,6 +12,8 @@ interface companiesContextType  {
 	handleCompanyFilter: Function,
 	filterCompanies: Function,
 	displayCompanies: Function,
+	showModal: boolean,
+	setShowModal: Function,
 }
 
 
@@ -21,6 +23,7 @@ export default function CompaniesProvider({children}: {children: React.ReactNode
 
 	const [companiesFilter,setCompaniesFilter] = useState<string>('');
 	const [filteredCompanies,setFilteredCompanies] = useState<Comp[] | undefined>([]);
+	const [showModal,setShowModal] = useState(false);
 
 	const {data: companies, isLoading} = useQuery({
 		queryKey: ['companies'],
@@ -75,7 +78,9 @@ export default function CompaniesProvider({children}: {children: React.ReactNode
 		handleCompanyFilter,
 		filterCompanies,
 		categories,
-		displayCompanies
+		displayCompanies,
+		showModal,
+		setShowModal
 	}}>
 		{children}
 	</CompaniesContext.Provider>

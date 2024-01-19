@@ -18,7 +18,7 @@ export default function Companies() {
 
 
   return (
-	<div className='overflow-hidden min-h-[calc(100vh-107px)] bg-stone-100 flex flex-col lg:flex-row p-16 gap-8'>
+	<div className='overflow-hidden min-h-[calc(100vh-107px)] bg-stone-100 flex flex-col lg:flex-row p-16 gap-8 '>
     <div className="flex-none w-full lg:w-1/4">
         {screenWidth<1024 && <button onClick={()=>setShowFilters(!showFilters)}>{showFilters?'Hide':'Show'} Filters</button>}
         {showFilters && <CompanyFilterOptions/>}

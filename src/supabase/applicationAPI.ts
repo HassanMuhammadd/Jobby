@@ -85,3 +85,4 @@ export async function updateApplication(application: Application,status: string)
 		console.log(e);
 	}
 }
+

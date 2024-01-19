@@ -24,6 +24,7 @@ export default function Applicants() {
 	return (
 	<div className='bg-stone-100 flex flex-col lg:flex-row p-8 sm:p-16 gap-8 min-h-screen'>
 		{
+			applications?.length===0?<h1 className='text-2xl w-full text-center'>No Applicants yet</h1>:
 			applications?.map((app: Application) => <ApplicantCard application={app} key={app.id} />)
 		}
 	</div>

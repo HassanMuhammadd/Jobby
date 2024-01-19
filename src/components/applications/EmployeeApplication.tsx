@@ -5,7 +5,6 @@ import {getAllJobs} from '../../supabase/jobAPI';
 import {getCompanyByID} from '../../supabase/companyAPI';
 import {Link} from 'react-router-dom';
 
-//TODO: GET COMPANY DATA FROM JOB ID
 export default function EmployeeApplication({application}: {application: Application}) {
 	const [companyId,setCompanyId] = useState(0);
 	const [company,setCompany] = useState<Company>({});

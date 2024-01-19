@@ -147,3 +147,16 @@ export async function getCompanyEmployees(id: number)
 	.eq('company_id', id);
 	return company_employees as {employee: Employee}[];
 }
+
+export async function addCompanyEmployee(company_id: number, employee_id: number)
+{
+	const {error} = await supabase
+	.from('company_employees')
+	.insert({company_id, employee_id})
+	.select();
+	if(error)
+	{
+		console.error(error);
+		throw new Error(error.message);
+	}
+}
