@@ -53,7 +53,7 @@ export async function addEmployee(employee:Employee)
 
 export async function updateEmployee(employee:Employee, id:number){
 
-	const {	name,
+	let {	name,
 			email,
 			password,
 			phone,
@@ -80,6 +80,8 @@ export async function updateEmployee(employee:Employee, id:number){
 			.from('employee-resumes')
 			.upload(resumeName,resume);
 		}
+		if(password)
+			password = bcrypt.hashSync(employee.password, 10);
 
 		const updatedEmployee: Employee= {
 		name: name || oldEmployee.name,
@@ -91,6 +93,7 @@ export async function updateEmployee(employee:Employee, id:number){
 		industry: industry || oldEmployee.industry,
 		image: imagePath || oldEmployee.image,
 		}
+
 
 		if(!resume)
 		updatedEmployee.resume = oldEmployee.resume;

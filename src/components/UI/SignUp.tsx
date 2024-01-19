@@ -114,7 +114,7 @@ export default function SignUp() {
   return (
     <div className="min-h-[calc(100vh-107px)] pt-8 pb-16 flex flex-col justify-center bg-stone-100">
       <h4 className='text-center my-4'>Create A New Account Now!</h4>
-      <form className='containerShadow flex flex-col mx-auto px-8 py-6 items-center justify-center border-2 rounded-lg border-emerald-700' onSubmit={(e)=>e.preventDefault()}>
+      <form className='containerShadow bg-white flex flex-col mx-auto px-8 py-6 items-center justify-center border-2 rounded-lg border-emerald-700' onSubmit={(e)=>e.preventDefault()}>
         <label htmlFor="accountType" className='mb-2'>Account Type</label>
         <select className='input px-3 py-2 border-emerald-900 border-b-2 mb-3 bg-transparent' id='accountType'  onChange={(e)=>setAccountType(e.target.value)}>
           <option value="company">Company</option>

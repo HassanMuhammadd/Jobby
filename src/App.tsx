@@ -16,6 +16,8 @@ import CompaniesProvider from './contexts/CompaniesContext';
 import JobsProvider from './contexts/JobsContext';
 import {AuthProvider} from './contexts/AuthContext';
 import PersonalProfile from './components/UI/PersonalProfile';
+import Applicants from './components/applications/Applicants';
+import PasswordReset from './components/UI/PasswordReset';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,8 +26,6 @@ const queryClient = new QueryClient({
     }
   }
 });
-
-//TODO: View Applications page, upload Application and track its status
 
 function App() {
   return (
@@ -45,10 +45,12 @@ function App() {
               <Route path='/companies/:id' element={<CompanyPage/>}/>
               <Route path='/jobs' element={<Jobs/>}/>
               <Route path='/jobs/:jobId' element={<JobPage/>}/>
+              <Route path='/jobs/:jobId/view' element={<Applicants/>}/>
               <Route path='/employees' element={<Employees/>}/>
               <Route path='/sign-in' element={<SignIn/>}/>
               <Route path='/sign-up' element={<SignUp/>}/>
               <Route path='/profile/:id' element={<PersonalProfile/>}/>
+              <Route path='/reset' element={<PasswordReset/>}/>
               <Route path='*' element={<Navigate replace to="/home"/>}/>
             </Route>
           </Routes>

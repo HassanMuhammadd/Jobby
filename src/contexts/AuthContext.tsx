@@ -46,6 +46,8 @@ function AuthProvider({children}: {children: React.ReactNode}) {
             {
                 setCompany(company);
                 setIsAuthenticated(1);
+                navigate("/companies");
+
             }
         }
         else{
@@ -63,10 +65,10 @@ function AuthProvider({children}: {children: React.ReactNode}) {
             else{
                 setEmployee(employee);
                 setIsAuthenticated(2);
+                navigate("/jobs");
             }
         }
         toast.success("Signed In Successfully!")
-        navigate("/jobs");
     }
 
     function signOut(){

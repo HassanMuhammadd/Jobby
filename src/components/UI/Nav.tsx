@@ -1,6 +1,5 @@
 import  { useState} from 'react'
 import { NavLink, useLocation, useNavigate} from 'react-router-dom';
-import Searchbar from './Searchbar';
 import {useWindowResize} from '../../hooks/useWindowResize';
 import {useAuth} from '../../contexts/AuthContext';
 
@@ -14,18 +13,16 @@ export default function Nav() {
 	const {isAuthenticated, signOut, company, employee} = useAuth();
 	const screenWidth = useWindowResize(setShowUl,890);
 	const url = useLocation().pathname;
-
 	return (
 	<nav className="flex flex-row justify-between items-center  py-8 px-16 ">
 		<button className='text-3xl' onClick={()=>navigate('/')}>JOBBY</button>
-		<Searchbar/>
 		<div className={`navItems items-center bg-white ${showUl && screenWidth<=890 && 'boxShadow'} `}>
 
 			{showUl &&<>
 			<div className='ulItems '>
 				<button className='menuIcon bg-red-500  text-white px-2 py-1 ' onClick={() => setShowUl(!showUl)}>X</button>
 				<NavLink onClick={handleChangeUl} to='/home' className={`link px-2 py-1 rounded-md ${url==='/home'?'activeLink':''}`}>Home</NavLink>
-				<NavLink onClick={handleChangeUl} to='/jobs' className={`link px-2 py-1 rounded-md ${url==='/jobs'?'activeLink':''}`}>Jobs</NavLink>
+				{!(isAuthenticated === 1) && <NavLink onClick={handleChangeUl} to='/jobs' className={`link px-2 py-1 rounded-md ${url==='/jobs'?'activeLink':''}`}>Jobs</NavLink>}
 				<NavLink onClick={handleChangeUl} to='/companies' className={`link px-2 py-1 rounded-md ${url==='/companies'?'activeLink':''}`}>Companies</NavLink>
 				<NavLink onClick={handleChangeUl} to='/employees' className={`link px-2 py-1 rounded-md ${url==='/employees'?'activeLink':''}`}>Employees</NavLink>
 			</div>

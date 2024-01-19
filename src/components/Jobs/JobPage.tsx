@@ -43,7 +43,11 @@ export default function JobPage() {
 				<p className='text-sm opacity-75 my-2'>Industry: {job.industry}</p>
 				<p className='text-sm opacity-75 my-2'>Job type: {job.type}</p>
 			</div>
-			{isAuthenticated?<CVForm jobId={jobId} />:<h4 className='my-6 text-center text-xl'>Login to apply to this job</h4>}
+			{isAuthenticated?<CVForm jobId={jobId} />:
+			<div className='my-6 text-center text-xl hover:underline  '>
+			<Link to='/sign-in' >Login to apply to this job</Link>
+			</div>
+			}
 
 		</>
 	)

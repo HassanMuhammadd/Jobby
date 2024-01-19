@@ -35,3 +35,12 @@ export type Job = {
 	type?: string,
 	created_at: Date,
 }
+
+export type Application = {
+	id?: number,
+	job_id?: number,
+	employee_id?: number,
+	status?: string,
+	created_at: Date,
+	resume?: any,
+}
