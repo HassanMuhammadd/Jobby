@@ -4,8 +4,8 @@ import {BrowserRouter, Navigate, Route, Routes} from 'react-router-dom';
 import AppLayout from './components/UI/AppLayout';
 import Companies from './components/companies/Companies';
 import Jobs from './components/Jobs/Jobs';
-import SignIn from './components/UI/SignIn';
-import SignUp from './components/UI/SignUp';
+import SignIn from './components/auth/SignIn';
+import SignUp from './components/auth/SignUp';
 import Employees from './components/employees/Employees';
 import CompanyPage from './components/companies/CompanyPage';
 import JobPage from './components/Jobs/JobPage';
@@ -17,7 +17,7 @@ import JobsProvider from './contexts/JobsContext';
 import {AuthProvider} from './contexts/AuthContext';
 import PersonalProfile from './components/UI/PersonalProfile';
 import Applicants from './components/applications/Applicants';
-import PasswordReset from './components/UI/PasswordReset';
+import PasswordReset from './components/auth/PasswordReset';
 
 const queryClient = new QueryClient({
   defaultOptions: {

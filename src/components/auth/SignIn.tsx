@@ -1,7 +1,7 @@
 import {useState} from 'react'
 import {useAuth} from '../../contexts/AuthContext';
-import Input from './Input'
-import Button from './Button';
+import Input from '../UI/Input'
+import Button from '../UI/Button';
 import {useNavigate} from 'react-router-dom';
 
 export default function SignIn() {
@@ -25,7 +25,7 @@ export default function SignIn() {
         <Input name='Email' type='email' value={email} onChange={(e:string)=>setEmail(e)}/>
         <Input name='Password' type='password' value={password} onChange={(e:string)=>setPassword(e)}/>
         <Button onClick={()=>signIn(accountType,email,password)} text="Sign In"/>
-        <button className='border-none text-xs text-red-400 hover:text-red-700 transition-all duration-200' onClick={()=>navigate('/reset')}>Forgot Password?</button>
+        <button className='border-none text-xs text-red-400 hover:text-red-700 hover:underline transition-all duration-200' onClick={()=>navigate('/reset')}>Reset Password here</button>
       </form>
     </div>
   )

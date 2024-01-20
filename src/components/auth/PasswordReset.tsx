@@ -1,5 +1,5 @@
 import React, {useState} from 'react'
-import Input from './Input'
+import Input from '../UI/Input'
 import toast from 'react-hot-toast';
 import {getEmployeeByEmail, updateEmployee} from '../../supabase/employeeAPI';
 import {useQueryClient} from '@tanstack/react-query';

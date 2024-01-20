@@ -21,23 +21,21 @@ export default function EmployeeApplication({application}: {application: Applica
 			}
 		})
 	},[allJobs, application]);
-
+	console.log(isLoading);
 	useEffect(()=>{
 		async function getCompany(){
-
-			if(isLoading)
-				return;
-
 			const company = await getCompanyByID(companyId);
+			console.log(company);
 			setCompany(company);
 		}
 		getCompany();
 	},[isLoading,companyId]);
-
+	if(isLoading)
+		return null;
 	if(!company)
-		return <h1>No Applications Found</h1>;
+		return null;
   return (
-	<div className="w-full px-4 py-6 bg-white rounded-lg shadow-md h-full flex flex-row justify-between items-center border-4 border-emerald-700">
+	<div className="w-full px-4 py-6 my-4 bg-white rounded-lg shadow-md h-full flex flex-row justify-between items-center border-4 border-emerald-700">
 		<section className="w-full">
 			<h3 className="text-xl font-semibold mb-2 uppercase">Company: {company.name}</h3>
 			<h3 className="text-lg mb-2">Industry: {company.industry}</h3>

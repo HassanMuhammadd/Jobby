@@ -1,10 +1,10 @@
 import {useState} from 'react'
-import Input from './Input';
+import Input from '../UI/Input';
 import toast from 'react-hot-toast';
 import {addCompany, getCompanyByEmail} from '../../supabase/companyAPI';
 import {useNavigate} from 'react-router-dom';
 import {addEmployee, getEmployeeByEmail} from '../../supabase/employeeAPI';
-import Button from './Button';
+import Button from '../UI/Button';
 
 export default function SignUp() {
 

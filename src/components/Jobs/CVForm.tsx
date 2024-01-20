@@ -21,17 +21,21 @@ export default function CVForm({jobId}: {jobId: string | undefined}) {
 		}
 		checkPresence();
 	},)
-	const {data: application } = useQuery({
+	const {data: application, isLoading } = useQuery({
 		queryKey: ['applications'],
 		queryFn: getEmployeeApplication.bind(null, Number(employee.id), Number(jobId)),
 	})
+	if(isLoading)
+		return null;
 	if(appliedBefore)
+	{
 		return (
 			<div className='text-xl text-center my-4  '>
 				You have already applied to this job!<br/>
 				Status: {application?.status}
 			</div>
 		)
+	}
 
 	async function handleCVSubmission(){
 		if(jobId && employee)

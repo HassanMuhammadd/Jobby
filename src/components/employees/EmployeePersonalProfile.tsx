@@ -11,17 +11,18 @@ export default function EmployeePersonalProfile() {
 	const {employee} = useAuth();
 	const {data: applications, isLoading} = useQuery({
 		queryKey: ['applications'],
-		queryFn: getEmployeeApplications.bind(null, Number(employee.id)),
+		queryFn: ()=>getEmployeeApplications(Number(employee.id)),
 	});
-	if(isLoading)
-	return null;
 
-	console.log(applications);
-		return (
+	if(isLoading)
+		return null;
+
+	return (
 		<div className=' min-h-[calc(100vh-107px)] p-16 bg-stone-100 flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-0 justify-between'>
-			<section className="flex flex-col items-center basis-1/3 w-full">
+			<section className="flex flex-col items-center basis-1/3 w-full ">
 				<EmployeeData employee={employee}/>
 				<h2 className='text-xl mt-8 mb-4'>Job Applications</h2>
+				{!applications?<h1 className='text-2xl w-full text-center'>No Applications yet</h1>:null}
 				{applications?.map((application: Application,i) => <EmployeeApplication key={i} application={application}  />)}
 			</section>
 			<section className='w-full md:w-1/3 basis-1/4'>
