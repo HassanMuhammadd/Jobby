@@ -101,28 +101,27 @@ const changePassword = asynchandler(async(req,res)=>{
 
 const applyJob = asynchandler (async(req,res,next)=>{
    const jobId = req.params.id;
-
    const curJob = await job.findOne({_id:jobId});
-   const newCv = req.file.filename;
    const userId = req.current.id;
 
-   if(newCv){
+   if(req.file){
+      const newCv = req.file.filename;
       await job.findByIdAndUpdate(
          {_id: jobId},
          {
             $push: { employeeIds: {userId: userId,newCv:newCv}}
          }
       )
-
-
-    
       res.json("succeeded")
-      // console.log(curJob.employeeIds)
-      // curJob.employeeIds.push({userId},{newCv:newCv})
    }
    else{
       const fetchUser = await user.findOne({_id:userId});
       curJob.employeeIds.push({userId},{newCv:fetchUser.avatar})
+      await job.findOneAndUpdate(
+         {_id:userId},
+         { $push: { EmployeeID: { userId:userId , newCv:fetchUser.avatar}}}
+      )
+      res.json("succeeded")
    }
 })
 
