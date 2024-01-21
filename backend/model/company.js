@@ -42,6 +42,9 @@ const companySchema = new mongoose.Schema ({
     token:{
         type : String,
         required : true
+    },
+    avatar:{
+        type : String
     }
 },
    {

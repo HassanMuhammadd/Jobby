@@ -1,8 +1,10 @@
+const mongoose = require('mongoose')
 const asynchandler = require('express-async-handler')
 const validator = require("validator");
 const user = require("../model/user")
 const bcrypt = require("bcrypt");
 const generate = require("../util/genToken")
+const job = require("../model/job")
 
 
 const signUp = asynchandler (async(req,res,next) => {
@@ -25,7 +27,16 @@ const signUp = asynchandler (async(req,res,next) => {
       if(password!=retypePassword){
          return res.json({error:"Password doesnot match"})
       }
-
+      
+      // console.log(req.file.filename)
+      let avat;
+      if(!req.file){
+        avat = "company-1705777891413.jpeg"
+      }
+      else{
+         avat = req.file.filename;
+      }
+      console.log("heeerr");
       const encryptedPassword = await bcrypt.hash(password,10);
       const newUser = new user({
          name,
@@ -35,14 +46,14 @@ const signUp = asynchandler (async(req,res,next) => {
          phone,
          industry,
          location,
-         // avatar:req.file.fieldname
+         avatar:avat
       });
       const token = await generate({id:newUser._id})
       newUser.token = token;
       // console.log(newUser)
       
-      const retUser = newUser.save();
-      res.json({User : retUser}); 
+      newUser.save();
+      res.json({User : newUser}); 
 })
 
 const signIn = asynchandler (async(req,res,next) => {
@@ -88,9 +99,37 @@ const changePassword = asynchandler(async(req,res)=>{
    res.json("updated successfully")
 })
 
+const applyJob = asynchandler (async(req,res,next)=>{
+   const jobId = req.params.id;
+
+   const curJob = await job.findOne({_id:jobId});
+   const newCv = req.file.filename;
+   const userId = req.current.id;
+
+   if(newCv){
+      await job.findByIdAndUpdate(
+         {_id: jobId},
+         {
+            $push: { employeeIds: {userId: userId,newCv:newCv}}
+         }
+      )
+
+
+    
+      res.json("succeeded")
+      // console.log(curJob.employeeIds)
+      // curJob.employeeIds.push({userId},{newCv:newCv})
+   }
+   else{
+      const fetchUser = await user.findOne({_id:userId});
+      curJob.employeeIds.push({userId},{newCv:fetchUser.avatar})
+   }
+})
+
 
 module.exports = {
     signUp,
     signIn,
-    changePassword
+    changePassword,
+    applyJob
 }

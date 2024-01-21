@@ -1,8 +1,9 @@
 const mongoose = require("mongoose")
 
 const jobSchema = new mongoose.Schema ({
-    employeeIds:[{type:mongoose.Schema.Types.ObjectId, ref:"User",
-                  status: {type:String, default:false}
+    employeeIds:[{userId:{type:mongoose.Schema.Types.ObjectId, ref:"User"},
+                  status: {type:String, default:false},
+                  newCv: {type:String}
                   }],
     companyId : {
         type : mongoose.Schema.Types.ObjectId,

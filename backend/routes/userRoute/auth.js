@@ -2,7 +2,6 @@ const express = require("express");
 const userController = require("../../controller/userController")
 const router = express.Router();
 const multer = require("multer");
-const token = require("../../Middleware/verifytoken");
 
 // Set up multer middleware
 const storage = multer.diskStorage({
@@ -17,7 +16,7 @@ const storage = multer.diskStorage({
   });
   
 const fileFilter = (req,file,cb)=>{
-    const fileName = file.mimetype.split['/'][0];
+    const fileName = file.mimetype.split("/")[0];
     if(fileName==="image" || fileName==="application"){
         return cb(null,true);
     }

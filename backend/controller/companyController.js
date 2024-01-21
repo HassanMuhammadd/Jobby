@@ -7,6 +7,7 @@ const job = require("../model/job");
 
 
 const signUp = asynchandler(async(req,res)=>{
+   console.log(req.file);
     const {name,email,password,retypePassword,phone,industry,location,description,foundationYear} = req.body;
   
     if((!name) || (!email) || (!password) || (!retypePassword) || (!phone) || (!industry) || (!location)
@@ -35,7 +36,8 @@ const signUp = asynchandler(async(req,res)=>{
         industry,
         location,
         description,
-        foundationYear
+        foundationYear,
+        avatar : req.file.filename
      });
      const token = await generate({id:newCompany._id});
      newCompany.token = token
@@ -88,10 +90,9 @@ const changePassword = asynchandler(async(req,res)=>{
    res.json("updated successfully")
 })
 
-const addJob = asynchandler((req,res)=>{
+const addJob = asynchandler(async(req,res)=>{
    const {name,category,salary,location,description,experience,type} = req.body;
    const companyId = req.current.id
-   console.log("IN addJob => ",companyId)
    const newJob = new job ({
       name,
       companyId,
@@ -102,8 +103,13 @@ const addJob = asynchandler((req,res)=>{
       experience,
       type
    })
-   console.log("errror")
    newJob.save();
+   // adding in jobIds array
+   await company.findOneAndUpdate(
+      {_id:companyId},
+      {$push:{jobIds:newJob._id}}
+   )
+  
    res.json("Job added succesffully");
   
 })

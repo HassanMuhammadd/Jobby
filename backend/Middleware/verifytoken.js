@@ -1,9 +1,7 @@
 const jwt = require("jsonwebtoken");
 
 const verifyToken = (req,res,next) =>{
-    console.log("before");
     const authtoken = req.headers["Authorization"] || req.headers["authorization"];
-    console.log("after");
     if (!authtoken) {
         return res.status(401).json({ error: 'Unauthorized: No token provided' });
       }
@@ -14,7 +12,6 @@ const verifyToken = (req,res,next) =>{
       try{
           const curuser = jwt.verify(token,SECRET_KEY);
           req.current = curuser
-          console.log("In verifyToken => ",curuser);
           next();
         //   return returnToken
      
