@@ -29,7 +29,7 @@ const upload = multer({
     fileFilter
 })
 router.post("/signIn_user",userController.signIn)
-router.post("/signUp_user",upload.single("avatar"),userController.signUp),
+router.post("/signUp_user",upload.single("avatar"),userController.signUp)
  // same name request from frontend
  router.post("/changePassword_user",userController.changePassword)
 

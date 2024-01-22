@@ -1,20 +1,34 @@
-const mongoose = require('mongoose')
 const asynchandler = require('express-async-handler')
 const validator = require("validator");
 const user = require("../model/user")
 const bcrypt = require("bcrypt");
 const generate = require("../util/genToken")
 const job = require("../model/job")
+const common = require("../util/common")
+const yup = require("yup")
+
+const userValidation = yup.object({
+   name: yup.string().required(),
+   email: yup.string().required(),
+   password: yup.string().required(),
+   retypePassword: yup.string().required(),
+   phone: yup.string().required(),
+   industry: yup.string().required(),
+   location: yup.string().required()
+   
+})
 
 
 const signUp = asynchandler (async(req,res,next) => {
    // console.log(req.file)
     const {name,email,password,retypePassword,phone,industry,location} = req.body;
     //   console.log(req.body);
-      if((!name) || (!email) || (!password) || (!retypePassword) || (!phone) || (!industry) || (!location)){
-         console.log("All fields are required");
-         return res.json({error:"All fields are required"});
-      }
+    try{
+      await userValidation.validate(req.body)
+   } catch{
+      console.log("All fields are required");
+      return res.json({error:"All fields are required"});
+   }
       if(!validator.isEmail(email)){
          return res.json({error:"Email is not correct"});
       }
@@ -125,10 +139,15 @@ const applyJob = asynchandler (async(req,res,next)=>{
    }
 })
 
+const updateInfo = asynchandler(async(req,res,next)=>{
+     const returnedData = await common.updateModelInfo(user,req.current.id,req.body,res,req.file)
+     res.send(returnedData)
+})
 
 module.exports = {
     signUp,
     signIn,
     changePassword,
-    applyJob
+    applyJob,
+    updateInfo
 }

@@ -4,14 +4,26 @@ const validator = require("validator")
 const asynchandler = require("express-async-handler");
 const generate = require("../util/genToken")
 const job = require("../model/job");
+const common = require("../util/common")
+const yup = require("yup")
 
-
+const companyValidation = yup.object({
+   name: yup.string().required(),
+   email: yup.string().required(),
+   password: yup.string().required(),
+   retypePassword: yup.string().required(),
+   phone: yup.string().required(),
+   industry: yup.string().required(),
+   location: yup.string().required(),
+   description: yup.string().required(),
+   foundationYear: yup.number().required()
+})
 const signUp = asynchandler(async(req,res)=>{
-   console.log(req.file);
+   // console.log(req.body);
     const {name,email,password,retypePassword,phone,industry,location,description,foundationYear} = req.body;
-  
-    if((!name) || (!email) || (!password) || (!retypePassword) || (!phone) || (!industry) || (!location)
-        || (!description) || (!foundationYear)){
+     try{
+        await companyValidation.validate(req.body)
+     } catch{
         console.log("All fields are required");
         return res.json({error:"All fields are required"});
      }
@@ -37,7 +49,7 @@ const signUp = asynchandler(async(req,res)=>{
         location,
         description,
         foundationYear,
-        avatar : req.file.filename
+        avatar : req.file?.filename
      });
      const token = await generate({id:newCompany._id});
      newCompany.token = token
@@ -114,9 +126,15 @@ const addJob = asynchandler(async(req,res)=>{
   
 })
 
+const updateInfo = asynchandler (async (req,res) => {
+   const returnedData = await common.updateModelInfo(company,req.current.id,req.body,res,req.file)
+   res.send(returnedData)
+})
+
 module.exports = {
     signUp,
     signIn,
     changePassword,
-    addJob
+    addJob,
+    updateInfo
 }

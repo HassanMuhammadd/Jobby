@@ -9,7 +9,8 @@ const companySchema = new mongoose.Schema ({
     },
     email : {
         type : String,
-        required : true
+        required : true,
+        unique : true
     },
     password : {
         type : String,
@@ -44,7 +45,9 @@ const companySchema = new mongoose.Schema ({
         required : true
     },
     avatar:{
-        type : String
+        type : String,
+        default:'/uploads/company-1705777891413.jpeg'
+    
     }
 },
    {
