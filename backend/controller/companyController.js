@@ -5,7 +5,9 @@ const asynchandler = require("express-async-handler");
 const generate = require("../util/genToken")
 const job = require("../model/job");
 const common = require("../util/common")
-const yup = require("yup")
+const yup = require("yup");
+const user = require("../model/user");
+const mongoose = require("mongoose");
 
 const companyValidation = yup.object({
    name: yup.string().required(),
@@ -51,7 +53,7 @@ const signUp = asynchandler(async(req,res)=>{
         foundationYear,
         avatar : req.file?.filename
      });
-     const token = await generate({id:newCompany._id});
+     const token = await generate({id:newCompany._id,email:newCompany.email});
      newCompany.token = token
      newCompany.save();
      res.json({Company : newCompany}); 
@@ -71,7 +73,7 @@ const signIn = asynchandler (async(req,res)=>{
     if(!checkPassword){
       return res.json({error:"Password is not correct"});
     }
-    const token = await generate({id:retrieveCompany._id});
+    const token = await generate({id:retrieveCompany._id,email:retrieveCompany.email});
     retrieveCompany.token = token
     retrieveCompany.save()
     console.log("LoggedIn successfully")
@@ -127,14 +129,78 @@ const addJob = asynchandler(async(req,res)=>{
 })
 
 const updateInfo = asynchandler (async (req,res) => {
-   const returnedData = await common.updateModelInfo(company,req.current.id,req.body,res,req.file)
+   const returnedData = await common.updateModelInfo(company,req.current.id,req.body,res,req.file,req.current.email)
    res.send(returnedData)
 })
+
+const getJobs = asynchandler(async(req,res)=>{
+   const compId = req.current.id;
+   const jobs = await job.find({companyId:compId});
+   res.status(200).json(jobs)
+})
+
+const getUsers = asynchandler(async(req,res)=>{
+    const jobId = req.params.id;
+    console.log(jobId)
+    const Job = await job.findOne({_id:jobId});
+    const employees = Job.employeeIds;
+    res.status(200).json(employees)
+})
+
+const acceptsUser = asynchandler(async(req,res)=>{
+    const userId = req.params.userId;
+    const jobId = req.params.jobId;
+    const updatedUser = await common.updateStatus(jobId, userId, "accepted");
+   //  res.status(200).json(updatedUser)
+    //-----------------------------
+    const User = await user.findOneAndUpdate(
+      {
+         _id:userId
+      },
+      {
+         $push: {jobIds:jobId, companyIds:req.current.id}
+      },
+      {
+         new:true
+      }
+    )
+   //  res.status(200).json(User);
+   //-----------------------------
+    const updateCompanyArray = await company.findOneAndUpdate(
+      {
+         _id:req.current.id
+      },
+      {
+         $push:{userIds:userId}
+      },
+      {
+         new:true
+      }
+    )
+        res.status(200).json(updateCompanyArray);
+
+
+})
+
+const rejectsUser = asynchandler(async(req,res)=>{
+   const userId = req.params.userId;
+   const jobId = req.params.jobId;
+   const updatedUser = await common.updateStatus(jobId, userId, "rejected");
+   res.status(200).json(updatedUser)
+})
+
+
+
+
 
 module.exports = {
     signUp,
     signIn,
     changePassword,
     addJob,
-    updateInfo
+    updateInfo,
+    getJobs,
+    getUsers,
+    acceptsUser,
+    rejectsUser
 }

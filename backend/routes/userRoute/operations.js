@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
   
 const fileFilter = (req,file,cb)=>{
     const fileName = file.mimetype.split("/")[0];
-    if(fileName==="image" || fileName==="application"){
+    if(fileName==="image" || file.mimetype==="application/pdf"){
         return cb(null,true);
     }
     else{
@@ -32,5 +32,6 @@ const upload = multer({
 // old route
 router.post("/applyJob/:id",upload.single("avatar"),token.verifyToken,user.applyJob)
 router.post("/updateUserData",upload.single("avatar"),token.verifyToken,user.updateInfo)
-router.post("/updateUserData",upload.single("avatar"),token.verifyToken,user.updateInfo)
+router.put("/updateUserData",upload.single("avatar"),token.verifyToken,user.updateInfo)
+router.get("/checkaApply/:id",token.verifyToken,user.checkApplied)
 module.exports = router

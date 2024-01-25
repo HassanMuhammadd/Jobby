@@ -17,7 +17,7 @@ const storage = multer.diskStorage({
   
 const fileFilter = (req,file,cb)=>{
     const fileName = file.mimetype.split("/")[0];
-    if(fileName==="image" || fileName==="application"){
+    if(fileName==="image" || file.mimetype==="application/pdf"){
         return cb(null,true);
     }
     else{
@@ -31,7 +31,7 @@ const upload = multer({
 router.post("/signIn_user",userController.signIn)
 router.post("/signUp_user",upload.single("avatar"),userController.signUp)
  // same name request from frontend
- router.post("/changePassword_user",userController.changePassword)
+ router.put("/changePassword_user",userController.changePassword)
 
 
 

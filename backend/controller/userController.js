@@ -5,7 +5,8 @@ const bcrypt = require("bcrypt");
 const generate = require("../util/genToken")
 const job = require("../model/job")
 const common = require("../util/common")
-const yup = require("yup")
+const yup = require("yup");
+const { default: mongoose } = require('mongoose');
 
 const userValidation = yup.object({
    name: yup.string().required(),
@@ -62,7 +63,7 @@ const signUp = asynchandler (async(req,res,next) => {
          location,
          avatar:avat
       });
-      const token = await generate({id:newUser._id})
+      const token = await generate({id:newUser._id,email:newUser.email})
       newUser.token = token;
       // console.log(newUser)
       
@@ -84,7 +85,7 @@ const signIn = asynchandler (async(req,res,next) => {
      if(!checkPassword){
        return res.json({error:"Password is not correct"});
      }
-     const token = await generate({id:retrieveUser._id});
+     const token = await generate({id:retrieveUser._id,email:retrieveUser.email});
      retrieveUser.token = token;
      retrieveUser.save();
      console.log("LoggedIn successfully")
@@ -113,8 +114,11 @@ const changePassword = asynchandler(async(req,res)=>{
    res.json("updated successfully")
 })
 
+// first time to apply
 const applyJob = asynchandler (async(req,res,next)=>{
    const jobId = req.params.id;
+     
+ 
    const curJob = await job.findOne({_id:jobId});
    const userId = req.current.id;
 
@@ -126,28 +130,50 @@ const applyJob = asynchandler (async(req,res,next)=>{
             $push: { employeeIds: {userId: userId,newCv:newCv}}
          }
       )
-      res.json("succeeded")
+      res.json("2succeeded")
    }
    else{
       const fetchUser = await user.findOne({_id:userId});
-      curJob.employeeIds.push({userId},{newCv:fetchUser.avatar})
+      // curJob.employeeIds.push({userId},{newCv:fetchUser.avatar})
       await job.findOneAndUpdate(
-         {_id:userId},
-         { $push: { EmployeeID: { userId:userId , newCv:fetchUser.avatar}}}
+         {_id:jobId},
+         { $push: { employeeIds: { userId:userId , newCv:fetchUser.avatar}}}
       )
-      res.json("succeeded")
+      res.json(fetchUser)
    }
 })
 
 const updateInfo = asynchandler(async(req,res,next)=>{
-     const returnedData = await common.updateModelInfo(user,req.current.id,req.body,res,req.file)
+    
+     const returnedData = await common.updateModelInfo(user,req.current.id,req.body,res,req.file,req.current.email)
      res.send(returnedData)
 })
+
+const checkApplied = asynchandler(async(req,res)=>{
+     const id = new mongoose.Types.ObjectId(req.current.id)
+     const check = await job.find({'employeeIds.userId':id})  // needs optimization
+     console.log(check)
+     let find = false;
+    for(var i = 0; i<check.length;i++){
+       if(check[i]._id == req.params.id){
+         find = true;
+         break;
+       }
+    }
+     if(find){
+      return res.send("already applied")
+     }
+     else{
+       return res.send("didn't apply before")
+     }
+})
+
 
 module.exports = {
     signUp,
     signIn,
     changePassword,
     applyJob,
-    updateInfo
+    updateInfo,
+    checkApplied
 }

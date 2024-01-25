@@ -32,7 +32,11 @@ const upload = multer({
 
 
 router.post("/addJob",token.verifyToken,companyController.addJob)
-router.post("/updateCompanyData",upload.single("avatar"),token.verifyToken,companyController.updateInfo)
-
-
+router.put("/updateCompanyData",upload.single("avatar"),token.verifyToken,companyController.updateInfo)
+router.get("/jobs",token.verifyToken,companyController.getJobs)
+router.get("/appliedUsers/:id",token.verifyToken,companyController.getUsers)
+router.put("/jobs/:jobId/applicants/:userId/accepted",token.verifyToken,companyController.acceptsUser)
+router.put("/jobs/:jobId/applicants/:userId/rejected",token.verifyToken,companyController.rejectsUser)
+// router.get("/applicants/:id",token.verifyToken,companyController.viewApplicants)
+// router.get("/appliedUsers/:id",token.verifyToken,companyController.getUsers)
 module.exports = router;
