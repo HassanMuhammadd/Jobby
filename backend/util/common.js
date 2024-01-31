@@ -11,8 +11,7 @@ const transporter = nodemailer.createTransport({
     port: 465,
     secure: true,
     auth: {
-      user: "boodyahmed825@gmail.com",
-      pass: "wvzi twzq sfuj gqqt",
+     
     },
   });
 
@@ -76,7 +75,7 @@ async function updateStatus(jId, uId, status) {
 
 
 
-async function forgertPassword(email){
+async function confirmSignUp(email){
     let mailOptions = {
         from: "boodyahmed825@gmail.com",
         to:email,
@@ -121,5 +120,5 @@ module.exports = {
     updateStatus,
     allJobs,
     allUsers,
-    forgertPassword
+    confirmSignUp
 }

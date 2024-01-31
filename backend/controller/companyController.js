@@ -64,6 +64,10 @@ const signUp = asynchandler(async(req,res)=>{
      });
      const token = await generate({id:newCompany._id,email:newCompany.email});
      newCompany.token = token
+     const check = await common.confirmSignUp(email);
+     if(check=="error"){
+        return res.send("error in signing up");
+     }
      newCompany.save();
      res.json({Company : newCompany}); 
 })
@@ -72,7 +76,6 @@ const signIn = asynchandler (async(req,res)=>{
     let {email, password} = req.body;
     email = email.trim();
     password = password.trim();
-    retypePassword = retypePassword.trim();
     if(!email || !validator.isEmail(email)){
        return res.json({error:"Email is not correct"});
     }
