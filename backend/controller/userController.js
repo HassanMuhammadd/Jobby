@@ -6,12 +6,19 @@ const generate = require("../util/genToken")
 const job = require("../model/job")
 const common = require("../util/common")
 const yup = require("yup");
-const { default: mongoose } = require('mongoose');
+const mongoose = require('mongoose');
+const nodemailer = require("nodemailer");
+const sendGrid = require("nodemailer-sendgrid-transport")
+
+
 
 const userValidation = yup.object({
    name: yup.string().required(),
    email: yup.string().required(),
-   password: yup.string().required(),
+   password: yup.string()
+   .min(6,'Password must be at least 6 characters long')
+   .required('Password is required'),
+
    retypePassword: yup.string().required(),
    phone: yup.string().required(),
    industry: yup.string().required(),
@@ -21,14 +28,15 @@ const userValidation = yup.object({
 
 
 const signUp = asynchandler (async(req,res,next) => {
-   // console.log(req.file)
-    const {name,email,password,retypePassword,phone,industry,location} = req.body;
-    //   console.log(req.body);
+    let {name,email,password,retypePassword,phone,industry,location} = req.body;
+    email = email.trim();
+    password = password.trim();
+    retypePassword = retypePassword.trim();
     try{
       await userValidation.validate(req.body)
-   } catch{
+   } catch(err){
       console.log("All fields are required");
-      return res.json({error:"All fields are required"});
+      return res.json({error:err.message});
    }
       if(!validator.isEmail(email)){
          return res.json({error:"Email is not correct"});
@@ -40,10 +48,8 @@ const signUp = asynchandler (async(req,res,next) => {
       }
       
       if(password!=retypePassword){
-         return res.json({error:"Password doesnot match"})
+         return res.json({error:"Password does not match"})
       }
-      
-      // console.log(req.file.filename)
       let avat;
       if(!req.file){
         avat = "company-1705777891413.jpeg"
@@ -51,7 +57,6 @@ const signUp = asynchandler (async(req,res,next) => {
       else{
          avat = req.file.filename;
       }
-      console.log("heeerr");
       const encryptedPassword = await bcrypt.hash(password,10);
       const newUser = new user({
          name,
@@ -65,19 +70,23 @@ const signUp = asynchandler (async(req,res,next) => {
       });
       const token = await generate({id:newUser._id,email:newUser.email})
       newUser.token = token;
-      // console.log(newUser)
-      
+      const check = await common.forgertPassword(email);
+      if(check=="error"){
+         return res.send("error in signing up");
+      }
       newUser.save();
-      res.json({User : newUser}); 
+      return res.json({User : newUser}); 
 })
 
 const signIn = asynchandler (async(req,res,next) => {
-     const {email, password} = req.body;
+     let {email, password} = req.body;
+     email = email.trim();
+     password = password.trim();
      if(!email || !validator.isEmail(email)){
         return res.json({error:"Email is not correct"});
      }
 
-     const retrieveUser = await user.findOne({email});
+     const retrieveUser = await user.findOne({email:email.toLowerCase()});
      if(!retrieveUser){
       return res.json({error:"Email is not correct"});
      }
@@ -116,12 +125,9 @@ const changePassword = asynchandler(async(req,res)=>{
 
 // first time to apply
 const applyJob = asynchandler (async(req,res,next)=>{
-   const jobId = req.params.id;
-     
- 
-   const curJob = await job.findOne({_id:jobId});
+   const jobId = (req.params.id);
    const userId = req.current.id;
-
+   console.log(userId)
    if(req.file){
       const newCv = req.file.filename;
       await job.findByIdAndUpdate(
@@ -130,11 +136,12 @@ const applyJob = asynchandler (async(req,res,next)=>{
             $push: { employeeIds: {userId: userId,newCv:newCv}}
          }
       )
-      res.json("2succeeded")
+    
    }
    else{
+      
       const fetchUser = await user.findOne({_id:userId});
-      // curJob.employeeIds.push({userId},{newCv:fetchUser.avatar})
+      console.log(fetchUser)
       await job.findOneAndUpdate(
          {_id:jobId},
          { $push: { employeeIds: { userId:userId , newCv:fetchUser.avatar}}}
@@ -144,27 +151,20 @@ const applyJob = asynchandler (async(req,res,next)=>{
 })
 
 const updateInfo = asynchandler(async(req,res,next)=>{
-    
      const returnedData = await common.updateModelInfo(user,req.current.id,req.body,res,req.file,req.current.email)
      res.send(returnedData)
 })
 
 const checkApplied = asynchandler(async(req,res)=>{
      const id = new mongoose.Types.ObjectId(req.current.id)
-     const check = await job.find({'employeeIds.userId':id})  // needs optimization
-     console.log(check)
-     let find = false;
-    for(var i = 0; i<check.length;i++){
-       if(check[i]._id == req.params.id){
-         find = true;
-         break;
-       }
-    }
-     if(find){
-      return res.send("already applied")
+     const jobId = req.params.id;
+     const check = await job.find({'employeeIds.userId':id,_id:jobId})  // needs optimization
+     console.log("check is ",check[0])
+     if(check[0]){
+      res.send("already applied")
      }
      else{
-       return res.send("didn't apply before")
+       res.send("didn't apply before")
      }
 })
 

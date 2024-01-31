@@ -10,7 +10,8 @@ const userSchema = new mongoose.Schema ({
     email : {
         type : String,
         required : true,
-        unique : true
+        unique : true,
+        lowercase: true
     },
     password : {
         type : String,
@@ -39,7 +40,9 @@ const userSchema = new mongoose.Schema ({
     token : {
         type:String,
         required : true
-    }
+    },
+    resetToken : String,
+    resetTokenExpiry : Date
     
 },
 {

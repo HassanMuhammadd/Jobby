@@ -31,7 +31,9 @@ const upload = multer({
 })
 
 router.post("/signUp_company",upload.single("avatar"),companyController.signUp)
+
 router.post("/signIn_company",companyController.signIn)
+
 router.put("/changePassword_company",companyController.changePassword)
 
 module.exports = router;

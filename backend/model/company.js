@@ -10,7 +10,8 @@ const companySchema = new mongoose.Schema ({
     email : {
         type : String,
         required : true,
-        unique : true
+        unique : true,
+        lowercase: true
     },
     password : {
         type : String,
@@ -48,7 +49,9 @@ const companySchema = new mongoose.Schema ({
         type : String,
         default:'/uploads/company-1705777891413.jpeg'
     
-    }
+    },
+    resetToken : String,
+    resetTokenExpiry : Date
 },
    {
     timestamps: true

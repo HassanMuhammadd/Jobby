@@ -12,7 +12,10 @@ const mongoose = require("mongoose");
 const companyValidation = yup.object({
    name: yup.string().required(),
    email: yup.string().required(),
-   password: yup.string().required(),
+   password: yup.string().required()
+   .min(6,'Password must be at least 6 characters long')
+   .required('Password is required'),
+
    retypePassword: yup.string().required(),
    phone: yup.string().required(),
    industry: yup.string().required(),
@@ -21,13 +24,15 @@ const companyValidation = yup.object({
    foundationYear: yup.number().required()
 })
 const signUp = asynchandler(async(req,res)=>{
-   // console.log(req.body);
-    const {name,email,password,retypePassword,phone,industry,location,description,foundationYear} = req.body;
+
+    let {name,email,password,retypePassword,phone,industry,location,description,foundationYear} = req.body;
+    email = email.trim();
+    password = password.trim();
      try{
         await companyValidation.validate(req.body)
-     } catch{
+     } catch(err){
         console.log("All fields are required");
-        return res.json({error:"All fields are required"});
+        return res.json({error:err.message});
      }
 
      if(!validator.isEmail(email)){
@@ -38,6 +43,10 @@ const signUp = asynchandler(async(req,res)=>{
      if(retrieveCompany){
         return res.json({error:"Email already exists"})
      }
+
+     if(password!=retypePassword){
+      return res.json({error:"Password does not match"})
+   }
 
      const encryptedPassword = await bcrypt.hash(password,10);
  
@@ -60,15 +69,19 @@ const signUp = asynchandler(async(req,res)=>{
 })
 
 const signIn = asynchandler (async(req,res)=>{
-    const {email, password} = req.body;
+    let {email, password} = req.body;
+    email = email.trim();
+    password = password.trim();
+    retypePassword = retypePassword.trim();
     if(!email || !validator.isEmail(email)){
        return res.json({error:"Email is not correct"});
     }
 
-    const retrieveCompany = await company.findOne({email});
+    const retrieveCompany = await company.findOne({email:email.toLowerCase()});
     if(!retrieveCompany){
      return res.json({error:"Email is not correct"});
     }
+
     const checkPassword = await bcrypt.compare(password,retrieveCompany.password);
     if(!checkPassword){
       return res.json({error:"Password is not correct"});
@@ -143,14 +156,37 @@ const getUsers = asynchandler(async(req,res)=>{
     const jobId = req.params.id;
     console.log(jobId)
     const Job = await job.findOne({_id:jobId});
-    const employees = Job.employeeIds;
+    let employees = [];
+    if(Job!=null){
+      employees = Job.employeeIds;
+    }
     res.status(200).json(employees)
 })
 
-const acceptsUser = asynchandler(async(req,res)=>{
+const getAllUsers = asynchandler(async(req,res)=>{
+    const compId = req.current.id;
+    const users = await user.find({companyIds:{$in:compId}})
+    res.json({"All users in current company":users})
+})
+
+const validateUser = asynchandler(async(req,res)=>{
     const userId = req.params.userId;
     const jobId = req.params.jobId;
-    const updatedUser = await common.updateStatus(jobId, userId, "accepted");
+    const status = req.body.status;
+    const updatedUser = await common.updateStatus(jobId, userId, status);
+    if(status=="rejected"){
+      console.log("heereee")
+      await job.updateOne(
+         {
+             _id:jobId
+         },
+         {
+            $pull:{employeeIds:{userId: userId}}
+         }
+      )
+
+      return res.send("status updated => rejected")
+    }
    //  res.status(200).json(updatedUser)
     //-----------------------------
     const User = await user.findOneAndUpdate(
@@ -177,7 +213,7 @@ const acceptsUser = asynchandler(async(req,res)=>{
          new:true
       }
     )
-        res.status(200).json(updateCompanyArray);
+        res.status(200).json({message:"User state has been changed successfully"});
 
 
 })
@@ -201,6 +237,7 @@ module.exports = {
     updateInfo,
     getJobs,
     getUsers,
-    acceptsUser,
+    validateUser,
+    getAllUsers,
     rejectsUser
 }
