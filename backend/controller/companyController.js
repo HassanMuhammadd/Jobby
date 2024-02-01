@@ -64,7 +64,7 @@ const signUp = asynchandler(async(req,res)=>{
      });
      const token = await generate({id:newCompany._id,email:newCompany.email});
      newCompany.token = token
-     const check = await common.confirmSignUp(email);
+     const check = await common.confirmSignUp(email,name);
      if(check=="error"){
         return res.send("error in signing up");
      }

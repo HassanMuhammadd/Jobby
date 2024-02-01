@@ -3,7 +3,9 @@ const asynchandler = require("express-async-handler");
 const job = require("../model/job")
 const user = require("../model/user")
 const crypto = require("crypto")
+const bcrypt = require("bcrypt")
 const nodemailer = require("nodemailer");
+const company = require("../model/company");
 
 const transporter = nodemailer.createTransport({
     service: "Gmail",
@@ -11,7 +13,8 @@ const transporter = nodemailer.createTransport({
     port: 465,
     secure: true,
     auth: {
-     
+        user: "boodyahmed825@gmail.com",
+        pass: "wvzi twzq sfuj gqqt",
     },
   });
 
@@ -75,12 +78,12 @@ async function updateStatus(jId, uId, status) {
 
 
 
-async function confirmSignUp(email){
+async function confirmSignUp(email,name){
     let mailOptions = {
-        from: "boodyahmed825@gmail.com",
+        from: "shopify@gmail.com",
         to:email,
-        subject:"Welcome to our company",
-        text: 'Thank you for signing up! We are excited to have you on board.'
+        subject:"Sign up successful",
+        text: `Hello ${name}, \n\n Welcome to our platform! You have successfully signed up.  `
      }
      console.log(email)
      try {
@@ -93,26 +96,79 @@ async function confirmSignUp(email){
       }
 }
 
-// const forgertPassword = asynchandler(req,res,next=>{
-//      const email = req.body.email;
-//      const Model = req.body.user;
-//      const resetToken = crypto.randomBytes(20).toString('hex');
+const forgertPassword = asynchandler(async(req,res,next)=>{
+     const email = req.body.email;
+     let Model = req.body.user;
+     if(Model=="user"){
+        console.log(email);
+        Model = user;
+     }
+     else{
+        Model = company
+     }
+     const resetToken = crypto.randomBytes(20).toString('hex');
 
-//      const user = Model.findOneAndUpdate(
-//         {email:email},                                       // 1hr
-//         {resetToken:resetToken, resetTokenExpiry:Date.now() + 3600000},
-//         {new:true}
-//      )
-//      if(!user){
-//         return res.status(400).json({error:"User not found"})
-//      }
-//      const mailOptions = {
-//         to:user.email,
-//         from
-//      }
+     const retrieveObject = await Model.findOneAndUpdate(
+        {email:email},                                       // 1hr
+        {resetToken:resetToken, resetTokenExpiry:Date.now() + 3600000},
+        {new:true}
+     )
+          console.log(retrieveObject.email)
+     if(retrieveObject == undefined){
+        return res.status(400).json({error:"User not found"})
+     }
+     const resetUrl = `http://Jobby/reset-password/${resetToken}`;
+     const mailOptions = {
+        from:'sho@gmail.com',
+        to:retrieveObject.email,
+        subject:"Reset password",
+        text:`Hello ${retrieveObject.name},\n\nYou have requested a password reset.Click on the following link to reset your password:\n\n
+              ${resetUrl}`,
+     };
+ 
+    try{
+       await transporter.sendMail(mailOptions);
+       res.status(200).send("Password reseted successfully");
+    }
+    catch(err){
+        console.log(err);
+        res.status(500).send('Internal Server Error');
+    }
+
+})
+
+const resetPassword = asynchandler(async(req,res,next)=>{
+     const password = req.body.password;
+     const Model = req.body.user;
+     const resetToken = req.params.token;
+     let Object;
+     if(Model == 'user'){
+        Object = user;
+     }
+     else{
+        Object = company;
+     }
+     const checkUser = await Object.findOne(
+        {
+           resetToken:resetToken,
+           resetTokenExpiry:{$gt : Date.now()} 
+        }
+     )
+     if(!checkUser){
+        return res.send("Error while reseting password");
+     }
+     const hashedPassword = await bcrypt.hash(password,10);
+     checkUser.password = hashedPassword;
+     checkUser.retypePassword = hashedPassword;
+     checkUser.resetToken = '';
+     checkUser.resetTokenExpiry = '';
+
+     checkUser.save();
+     res.send("password updated successfully");
+
+})
 
 
-// })
 
 module.exports = {
     allCompanies,
@@ -120,5 +176,7 @@ module.exports = {
     updateStatus,
     allJobs,
     allUsers,
-    confirmSignUp
+    confirmSignUp,
+    forgertPassword,
+    resetPassword
 }

@@ -2,6 +2,7 @@ const express = require("express");
 const common = require("../util/common")
 const router = express.Router();
 
+
 router.get("/getCompanies",common.allCompanies)
 
 router.get("/getJobs",common.allJobs)
@@ -9,6 +10,9 @@ router.get("/getJobs",common.allJobs)
 router.get("/getUsers",common.allUsers)
 
 //forget password
-router.post("/forgetPassword")
+router.post("/forgetPassword",common.forgertPassword)
 
+router.post("/resetPassword/:token",common.resetPassword)
+
+// router.get("/Jobby/reset-password/:token",common.resetPassword)
 module.exports = router;
