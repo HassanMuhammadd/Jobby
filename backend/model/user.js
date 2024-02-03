@@ -37,6 +37,9 @@ const userSchema = new mongoose.Schema ({
         type:String,
         default:'/uploads/company-1705777891413.jpeg'
     },
+    cv :{
+        type:String
+    },
     token : {
         type:String,
         required : true
@@ -50,4 +53,6 @@ const userSchema = new mongoose.Schema ({
 }
 )
 
+
 module.exports = mongoose.model("User",userSchema)
+

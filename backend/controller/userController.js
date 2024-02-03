@@ -28,6 +28,7 @@ const userValidation = yup.object({
 
 
 const signUp = asynchandler (async(req,res,next) => {
+
     let {name,email,password,retypePassword,phone,industry,location} = req.body;
     email = email.trim();
     password = password.trim();
@@ -50,13 +51,16 @@ const signUp = asynchandler (async(req,res,next) => {
       if(password!=retypePassword){
          return res.json({error:"Password does not match"})
       }
-      let avat;
-      if(!req.file){
-        avat = "company-1705777891413.jpeg"
+   
+      let avat, cv;
+      if(!req.files['PDF']){
+         return res.send("Your CV is required");
       }
-      else{
-         avat = req.file.filename;
+      if(!req.files['avatar']){
+         return res.send("Your image is required");
       }
+      cv = req.files['PDF'][0].path;
+      avat = req.files['avatar'][0].filename;
       const encryptedPassword = await bcrypt.hash(password,10);
       const newUser = new user({
          name,
@@ -66,7 +70,8 @@ const signUp = asynchandler (async(req,res,next) => {
          phone,
          industry,
          location,
-         avatar:avat
+         avatar:avat,
+         cv :cv
       });
       const token = await generate({id:newUser._id,email:newUser.email})
       newUser.token = token;
@@ -86,7 +91,8 @@ const signIn = asynchandler (async(req,res,next) => {
         return res.json({error:"Email is not correct"});
      }
 
-     const retrieveUser = await user.findOne({email:email.toLowerCase()});
+
+     const retrieveUser = await user.findOne({email:email.toLowerCase()})
      if(!retrieveUser){
       return res.json({error:"Email is not correct"});
      }
@@ -100,6 +106,7 @@ const signIn = asynchandler (async(req,res,next) => {
      console.log("LoggedIn successfully")
      res.json({User:retrieveUser})
 })
+
 const changePassword = asynchandler(async(req,res)=>{
 
    const {email, oldPassword, newPassword, confirmPassword} = req.body;

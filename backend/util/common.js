@@ -13,8 +13,8 @@ const transporter = nodemailer.createTransport({
     port: 465,
     secure: true,
     auth: {
-        user: "boodyahmed825@gmail.com",
-        pass: "wvzi twzq sfuj gqqt",
+      //   user: "boodyahmed825@gmail.com",
+      //   pass: "wvzi twzq sfuj gqqt",
     },
   });
 
@@ -79,21 +79,21 @@ async function updateStatus(jId, uId, status) {
 
 
 async function confirmSignUp(email,name){
-    let mailOptions = {
-        from: "shopify@gmail.com",
-        to:email,
-        subject:"Sign up successful",
-        text: `Hello ${name}, \n\n Welcome to our platform! You have successfully signed up.  `
-     }
-     console.log(email)
-     try {
-        const info = await transporter.sendMail(mailOptions);
-        console.log({ message: 'Signup successful. Welcome email sent.' });
-        return "succeeded";
-      } catch (error) {
-        console.log({ error: 'Error sending welcome email.' ,error});
-        return "error";
-      }
+   //  let mailOptions = {
+   //      from: "shopify@gmail.com",
+   //      to:email,
+   //      subject:"Sign up successful",
+   //      text: `Hello ${name}, \n\n Welcome to our platform! You have successfully signed up.  `
+   //   }
+   //   console.log(email)
+   //   try {
+   //      const info = await transporter.sendMail(mailOptions);
+   //      console.log({ message: 'Signup successful. Welcome email sent.' });
+   //      return "succeeded";
+   //    } catch (error) {
+   //      console.log({ error: 'Error sending welcome email.' ,error});
+   //      return "error";
+   //    }
 }
 
 const forgertPassword = asynchandler(async(req,res,next)=>{

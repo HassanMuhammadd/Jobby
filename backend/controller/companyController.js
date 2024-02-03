@@ -221,14 +221,26 @@ const validateUser = asynchandler(async(req,res)=>{
 
 })
 
-const rejectsUser = asynchandler(async(req,res)=>{
-   const userId = req.params.userId;
-   const jobId = req.params.jobId;
-   const updatedUser = await common.updateStatus(jobId, userId, "rejected");
-   res.status(200).json(updatedUser)
+
+const viewCv = asynchandler(async(req,res)=>{
+
+    const userId = req.params.userId;
+    const jobId = req.params.jobId;
+    const findJob = await company.findOne({_id:req.current.id , jobIds :{$in : jobId} });
+
+    if(!findJob){
+      return res.status(500).send("Not authorized");
+    }
+    console.log("hereddd");
+    user.findOne({_id:userId})
+    .then(fetchedUser=>{
+      const cvPath = fetchedUser.cv;
+      return res.send(cvPath);
+    })
+    .catch(err=>{
+      res.send({error:err});
+    })
 })
-
-
 
 
 
@@ -242,5 +254,5 @@ module.exports = {
     getUsers,
     validateUser,
     getAllUsers,
-    rejectsUser
+    viewCv
 }
