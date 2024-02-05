@@ -1,12 +1,14 @@
 const mongoose = require("mongoose");
 const express = require("express");
 const app = express();
+
 const user = require("./routes/userRoute/auth");
 const company = require("./routes/companyRoute/auth")
 const shared = require("./routes/shared")
 const companyOperations = require("./routes/companyRoute/operations")
 const userOperation = require("./routes/userRoute/operations")
 const path = require("path")
+
 const url = "mongodb+srv://boodyahmed:Boody123456777@cluster0.a0vxcji.mongodb.net/Jobby";
 
 mongoose.connect(url).then(()=>{

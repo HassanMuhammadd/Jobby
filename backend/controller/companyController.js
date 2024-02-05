@@ -5,29 +5,17 @@ const asynchandler = require("express-async-handler");
 const generate = require("../util/genToken")
 const job = require("../model/job");
 const common = require("../util/common")
-const yup = require("yup");
 const user = require("../model/user");
-const mongoose = require("mongoose");
+const { companyValidation } = require('../Middleware/companyValidations')
 
-const companyValidation = yup.object({
-   name: yup.string().required(),
-   email: yup.string().required(),
-   password: yup.string().required()
-   .min(6,'Password must be at least 6 characters long')
-   .required('Password is required'),
-
-   retypePassword: yup.string().required(),
-   phone: yup.string().required(),
-   industry: yup.string().required(),
-   location: yup.string().required(),
-   description: yup.string().required(),
-   foundationYear: yup.number().required()
-})
 const signUp = asynchandler(async(req,res)=>{
-
     let {name,email,password,retypePassword,phone,industry,location,description,foundationYear} = req.body;
     email = email.trim();
     password = password.trim();
+    retypePassword = retypePassword.trim();
+    req.body.password = password;
+    req.body.retypePassword = retypePassword;
+    req.body.email = email;
      try{
         await companyValidation.validate(req.body)
      } catch(err){
@@ -47,6 +35,7 @@ const signUp = asynchandler(async(req,res)=>{
      if(password!=retypePassword){
       return res.json({error:"Password does not match"})
    }
+
 
      const encryptedPassword = await bcrypt.hash(password,10);
  
@@ -145,7 +134,20 @@ const addJob = asynchandler(async(req,res)=>{
 })
 
 const updateInfo = asynchandler (async (req,res) => {
-   const returnedData = await common.updateModelInfo(company,req.current.id,req.body,res,req.file,req.current.email)
+   let { password, retypePassword, email } = req.body;
+   password = password.trim();
+   email = email.trim();
+   retypePassword = retypePassword.trim();
+   if(password!=retypePassword){
+      return res.status(400).json({error:"password does not match retype password"});
+   }
+ 
+   req.body.password = password;
+   req.body.retypePassword = retypePassword;
+   req.body.email = email;
+   console.log(req.body);
+   await companyValidation.validate(req.body)
+   const returnedData = await common.updateModelInfo(company,req.current.id,req.body,res,req.file,req.current.email,req)
    res.send(returnedData)
 })
 

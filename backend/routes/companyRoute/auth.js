@@ -5,10 +5,10 @@ const multer = require("multer");
 const file = require("../../Middleware/upload")
 
 
-router.post("/signUp_company",file.upload.single("avatar"),companyController.signUp)
+router.post("/companies/signup",file.upload.single("avatar"),companyController.signUp)
 
-router.post("/signIn_company",companyController.signIn)
+router.post("/companies/signin",companyController.signIn)
 
-router.put("/changePassword_company",companyController.changePassword)
+router.put("/companies/change-password",companyController.changePassword)
 
 module.exports = router;

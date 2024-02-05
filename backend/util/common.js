@@ -7,49 +7,94 @@ const bcrypt = require("bcrypt")
 const nodemailer = require("nodemailer");
 const company = require("../model/company");
 
+
+const compPerPage = 4, jobPerPage = 4, empPerPage = 6;
+
 const transporter = nodemailer.createTransport({
     service: "Gmail",
     host: "smtp.gmail.com",
     port: 465,
     secure: true,
     auth: {
-      //   user: "boodyahmed825@gmail.com",
-      //   pass: "wvzi twzq sfuj gqqt",
+
     },
   });
 
 const allCompanies = asynchandler (async(req,res)=>{
-    const returnCompoanies = await companies.find();
-    return res.json({allCompanies:returnCompoanies})
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * compPerPage;
+    const allCompanies = await company.countDocuments();
+    const lastPage = Math.ceil(allCompanies / compPerPage);
+    
+    const returnCompanies = await companies
+    .find()
+    .skip(skip)
+    .limit(compPerPage);
+      
+    return res.json({
+      allCompanies: allCompanies,
+      curPage: page,
+      lastPage: lastPage,
+      companies_in_cur_page: returnCompanies
+   })
 })
 
 const allJobs = asynchandler(async(req,res)=>{
-     const returnJobs = await job.find();
-     res.json({allJobs:returnJobs})
+     const page = parseInt(req.query.page) || 1;
+     const skip = (page - 1) * jobPerPage;
+     const allJobs = await job.countDocuments();
+     const lastPage = Math.ceil(allJobs / jobPerPage);
+
+     const returnJobs = await job
+     .find()
+     .skip(skip)
+     .limit(jobPerPage);
+
+     res.json({
+      allJobs: allJobs,
+      curPage: page,
+      lastPage: lastPage,
+      jobs_in_cur_page: returnJobs,
+   })
 })
 
 const allUsers = asynchandler(async(req,res)=>{
-     const returnUsers = await user.find();
-     res.json({allUsers:returnUsers})
+     const page = parseInt(req.query.page) || 1;
+     const skip = (page - 1) * empPerPage;
+     const allEmployees = await user.countDocuments();
+     const lastPage = Math.ceil(allEmployees / empPerPage);
+
+     const returnUsers = await user
+     .find()
+     .skip(skip)
+     .limit(empPerPage);
+
+     res.json({
+      allUsers: allEmployees,
+      curPage: page,
+      lastPage: lastPage,
+      user_in_cur_page: returnUsers
+   })
 })
 
-async function updateModelInfo(Model, docId, updatedData, res, file, email){
+async function updateModelInfo(Model, docId, updatedData, res, file, email, req){
     try{
         const checkEmail = await Model.countDocuments({
             email: updatedData.email
         })
+        console.log(checkEmail,email,updatedData.email)
         if(checkEmail==1 && email!=updatedData.email){
             return {error:"This email already exists"}
         }
         if(file){
             updatedData.avatar = file.filename;
-        }
-       
+        }   
        const updatedDocument = await Model.findOneAndUpdate(
             { _id: docId },
             {$set:{...updatedData} },
             { new : true}
          );
+         req.current.email = updatedData.email
          return updatedDocument
     }
     catch(err){

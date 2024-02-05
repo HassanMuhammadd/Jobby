@@ -4,13 +4,13 @@ const router = express.Router();
 const file = require("../../Middleware/upload")
 
 
-router.post("/signIn_user",userController.signIn)
+router.post("/users/signin",userController.signIn)
 
-router.post("/signUp_user",file.upload.fields([{name:'avatar',maxCount:1} , 
+router.post("/users/signup",file.upload.fields([{name:'avatar',maxCount:1} , 
                                                {name:'PDF' , maxCount:1}]),userController.signUp)
 
 // same name request from frontend
-router.put("/changePassword_user",userController.changePassword)
+router.put("/users/change-password",userController.changePassword)
 
 
 

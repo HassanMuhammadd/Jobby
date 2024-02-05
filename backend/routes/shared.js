@@ -3,16 +3,16 @@ const common = require("../util/common")
 const router = express.Router();
 
 
-router.get("/getCompanies",common.allCompanies)
+router.get("/companies",common.allCompanies)
 
-router.get("/getJobs",common.allJobs)
+router.get("/jobs",common.allJobs)
 
-router.get("/getUsers",common.allUsers)
+router.get("/users",common.allUsers)
 
 //forget password
-router.post("/forgetPassword",common.forgertPassword)
+router.post("/forget-password",common.forgertPassword)
 
-router.post("/resetPassword/:token",common.resetPassword)
+router.post("/reset-password/:token",common.resetPassword)
 
 // router.get("/Jobby/reset-password/:token",common.resetPassword)
 module.exports = router;

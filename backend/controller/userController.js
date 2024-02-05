@@ -5,26 +5,8 @@ const bcrypt = require("bcrypt");
 const generate = require("../util/genToken")
 const job = require("../model/job")
 const common = require("../util/common")
-const yup = require("yup");
 const mongoose = require('mongoose');
-const nodemailer = require("nodemailer");
-const sendGrid = require("nodemailer-sendgrid-transport")
-
-
-
-const userValidation = yup.object({
-   name: yup.string().required(),
-   email: yup.string().required(),
-   password: yup.string()
-   .min(6,'Password must be at least 6 characters long')
-   .required('Password is required'),
-
-   retypePassword: yup.string().required(),
-   phone: yup.string().required(),
-   industry: yup.string().required(),
-   location: yup.string().required()
-   
-})
+const { userValidation } = require("../Middleware/userValidation");
 
 
 const signUp = asynchandler (async(req,res,next) => {
@@ -33,6 +15,9 @@ const signUp = asynchandler (async(req,res,next) => {
     email = email.trim();
     password = password.trim();
     retypePassword = retypePassword.trim();
+    req.body.password = password;
+    req.body.retypePassword = retypePassword;
+    req.body.email = email;
     try{
       await userValidation.validate(req.body)
    } catch(err){
@@ -158,14 +143,27 @@ const applyJob = asynchandler (async(req,res,next)=>{
 })
 
 const updateInfo = asynchandler(async(req,res,next)=>{
-     const returnedData = await common.updateModelInfo(user,req.current.id,req.body,res,req.file,req.current.email)
-     res.send(returnedData)
+      let { password, retypePassword, email } = req.body;
+      console.log("here");
+      password = password.trim();
+      email = email.trim();
+      retypePassword = retypePassword.trim();
+      if(password!=retypePassword){
+         return res.status(400).json({error:"password does not match retype password"});
+      }
+      req.body.password = password;
+      req.body.retypePassword = retypePassword;
+      req.body.email = email;
+      console.log(req.body);
+      await userValidation.validate(req.body)
+      const returnedData = await common.updateModelInfo(user,req.current.id,req.body,res,req.file,req.current.email,req)
+      res.send(returnedData)
 })
 
 const checkApplied = asynchandler(async(req,res)=>{
      const id = new mongoose.Types.ObjectId(req.current.id)
      const jobId = req.params.id;
-     const check = await job.find({'employeeIds.userId':id,_id:jobId})  // needs optimization
+     const check = await job.find({'employeeIds.userId':id,_id:jobId})  
      console.log("check is ",check[0])
      if(check[0]){
       res.send("already applied")
