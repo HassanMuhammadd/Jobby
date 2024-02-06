@@ -47,10 +47,11 @@ router.get("/jobs",common.allJobs)
 
 router.get("/users",common.allUsers)
 
-//forget password
 router.post("/forget-password",limiter,common.forgertPassword)
 
 router.post("/reset-password/:token",common.resetPassword)
+
+router.get("/company/:id",common.getCompany);
 
 // router.get("/Jobby/reset-password/:token",common.resetPassword)
 module.exports = router;

@@ -20,14 +20,29 @@ const transporter = nodemailer.createTransport({
     },
   });
 
+
+const buildQuery = (queryParam)=>{
+    const query = {};
+
+    Object.entries(queryParam).forEach(([key, value]) => {
+      if (key!='page') {
+          query[key] = value;
+      }
+    });
+    return query;
+ } 
+
 const allCompanies = asynchandler (async(req,res)=>{
+    const fields = 'name email industry location description';
+    const query = buildQuery(req.query);
     const page = parseInt(req.query.page) || 1;
     const skip = (page - 1) * compPerPage;
-    const allCompanies = await company.countDocuments();
+    const allCompanies = await company.countDocuments(query);
     const lastPage = Math.ceil(allCompanies / compPerPage);
     
     const returnCompanies = await companies
-    .find()
+    .find(query)
+    .select(fields)
     .skip(skip)
     .limit(compPerPage);
       
@@ -40,13 +55,16 @@ const allCompanies = asynchandler (async(req,res)=>{
 })
 
 const allJobs = asynchandler(async(req,res)=>{
+     const fields = 'name description salary companyId';
+     const query = buildQuery(req.query);
      const page = parseInt(req.query.page) || 1;
      const skip = (page - 1) * jobPerPage;
-     const allJobs = await job.countDocuments();
+     const allJobs = await job.countDocuments(query);
      const lastPage = Math.ceil(allJobs / jobPerPage);
 
      const returnJobs = await job
-     .find()
+     .find(query)
+     .select(fields)
      .skip(skip)
      .limit(jobPerPage);
 
@@ -75,6 +93,15 @@ const allUsers = asynchandler(async(req,res)=>{
       lastPage: lastPage,
       user_in_cur_page: returnUsers
    })
+})
+
+
+const getCompany = asynchandler(async(req,res) => {
+    const compId = req.params.id;
+    const Company =  await company.findOne({_id:compId});
+    res.status(200).json({
+      company:Company
+    })
 })
 
 async function updateModelInfo(Model, docId, updatedData, res, file, email, req){
@@ -223,5 +250,6 @@ module.exports = {
     allUsers,
     confirmSignUp,
     forgertPassword,
-    resetPassword
+    resetPassword,
+    getCompany
 }
