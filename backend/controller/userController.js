@@ -69,6 +69,7 @@ const signUp = asynchandler (async(req,res,next) => {
 })
 
 const signIn = asynchandler (async(req,res,next) => {
+   console.log("signIn",res.csrfToken)
      let {email, password} = req.body;
      email = email.trim();
      password = password.trim();
@@ -144,7 +145,7 @@ const applyJob = asynchandler (async(req,res,next)=>{
 
 const updateInfo = asynchandler(async(req,res,next)=>{
       let { password, retypePassword, email } = req.body;
-      console.log("here");
+      // console.log("here");
       password = password.trim();
       email = email.trim();
       retypePassword = retypePassword.trim();
@@ -154,7 +155,7 @@ const updateInfo = asynchandler(async(req,res,next)=>{
       req.body.password = password;
       req.body.retypePassword = retypePassword;
       req.body.email = email;
-      console.log(req.body);
+      console.log("in user controller",req.current.email);
       await userValidation.validate(req.body)
       const returnedData = await common.updateModelInfo(user,req.current.id,req.body,res,req.file,req.current.email,req)
       res.send(returnedData)
@@ -169,7 +170,10 @@ const checkApplied = asynchandler(async(req,res)=>{
       res.send("already applied")
      }
      else{
-       res.send("didn't apply before")
+       res.send.json({
+         state:"didn't apply before",
+         csrfToken : res.csrfToken
+       })
      }
 })
 

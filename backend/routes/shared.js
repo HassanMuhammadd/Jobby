@@ -53,5 +53,7 @@ router.post("/reset-password/:token",common.resetPassword)
 
 router.get("/company/:id",common.getCompany);
 
+router.get("/users/:id", common.getUser);
+
 // router.get("/Jobby/reset-password/:token",common.resetPassword)
 module.exports = router;

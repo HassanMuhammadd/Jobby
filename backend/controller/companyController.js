@@ -154,7 +154,10 @@ const updateInfo = asynchandler (async (req,res) => {
 const getJobs = asynchandler(async(req,res)=>{
    const compId = req.current.id;
    const jobs = await job.find({companyId:compId});
-   res.status(200).json(jobs)
+   res.status(200).json({
+      jobs:jobs,
+      csrfToken : res.csrfToken
+   })
 })
 
 const getUsers = asynchandler(async(req,res)=>{
@@ -165,13 +168,16 @@ const getUsers = asynchandler(async(req,res)=>{
     if(Job!=null){
       employees = Job.employeeIds;
     }
-    res.status(200).json(employees)
+    res.status(200).json({employees:employees},{
+      csrfToken : res.csrfToken
+    })
 })
 
 const getAllUsers = asynchandler(async(req,res)=>{
     const compId = req.current.id;
     const users = await user.find({companyIds:{$in:compId}})
-    res.json({"All users in current company":users})
+    res.json({"All users in current company":users,
+    csrfToken : res.csrfToken})
 })
 
 const validateUser = asynchandler(async(req,res)=>{
@@ -237,10 +243,14 @@ const viewCv = asynchandler(async(req,res)=>{
     user.findOne({_id:userId})
     .then(fetchedUser=>{
       const cvPath = fetchedUser.cv;
-      return res.send(cvPath);
+      return res.send.json({
+         cvPath:cvPath,
+         csrfToken : res.csrfToken
+      });
     })
     .catch(err=>{
-      res.send({error:err});
+      res.send({error:err,
+         csrfToken : res.csrfToken});
     })
 })
 

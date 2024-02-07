@@ -6,7 +6,7 @@ const crypto = require("crypto")
 const bcrypt = require("bcrypt")
 const nodemailer = require("nodemailer");
 const company = require("../model/company");
-
+const generate = require("../util/genToken")
 
 const compPerPage = 4, jobPerPage = 4, empPerPage = 6;
 
@@ -23,7 +23,6 @@ const transporter = nodemailer.createTransport({
 
 const buildQuery = (queryParam)=>{
     const query = {};
-
     Object.entries(queryParam).forEach(([key, value]) => {
       if (key!='page') {
           query[key] = value;
@@ -39,7 +38,6 @@ const allCompanies = asynchandler (async(req,res)=>{
     const skip = (page - 1) * compPerPage;
     const allCompanies = await company.countDocuments(query);
     const lastPage = Math.ceil(allCompanies / compPerPage);
-    
     const returnCompanies = await companies
     .find(query)
     .select(fields)
@@ -50,7 +48,8 @@ const allCompanies = asynchandler (async(req,res)=>{
       allCompanies: allCompanies,
       curPage: page,
       lastPage: lastPage,
-      companies_in_cur_page: returnCompanies
+      companies_in_cur_page: returnCompanies,
+      csrfToken : res.csrfToken
    })
 })
 
@@ -73,6 +72,7 @@ const allJobs = asynchandler(async(req,res)=>{
       curPage: page,
       lastPage: lastPage,
       jobs_in_cur_page: returnJobs,
+      csrfToken : res.csrfToken
    })
 })
 
@@ -100,19 +100,30 @@ const getCompany = asynchandler(async(req,res) => {
     const compId = req.params.id;
     const Company =  await company.findOne({_id:compId});
     res.status(200).json({
-      company:Company
+      company:Company,
+      csrfToken : res.csrfToken
     })
 })
 
+const getUser = asynchandler(async(req,res) => {
+   const userId = req.params.id;
+   const User =  await user.findOne({_id:userId});
+   res.status(200).json({
+     user:User,
+     csrfToken : res.csrfToken
+   })
+})
+
 async function updateModelInfo(Model, docId, updatedData, res, file, email, req){
+
     try{
-        const checkEmail = await Model.countDocuments({
-            email: updatedData.email
-        })
-        console.log(checkEmail,email,updatedData.email)
-        if(checkEmail==1 && email!=updatedData.email){
-            return {error:"This email already exists"}
-        }
+      //   const checkEmail = await Model.countDocuments({
+      //       email: updatedData.email
+      //   })
+      //   console.log(checkEmail,req.current.email,updatedData.email)
+      //   if(checkEmail==1 && email!=updatedData.email){
+      //       return {error:"This email already exists"}
+      //   }
         if(file){
             updatedData.avatar = file.filename;
         }   
@@ -121,11 +132,11 @@ async function updateModelInfo(Model, docId, updatedData, res, file, email, req)
             {$set:{...updatedData} },
             { new : true}
          );
-         req.current.email = updatedData.email
+
          return updatedDocument
     }
     catch(err){
-        res.send("Error while updating data");
+        res.send({error:err.message});
     }
 }
 
@@ -251,5 +262,6 @@ module.exports = {
     confirmSignUp,
     forgertPassword,
     resetPassword,
-    getCompany
+    getCompany,
+    getUser
 }
