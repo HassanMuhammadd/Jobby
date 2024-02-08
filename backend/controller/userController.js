@@ -7,11 +7,11 @@ const job = require("../model/job")
 const common = require("../util/common")
 const mongoose = require('mongoose');
 const { userValidation } = require("../Middleware/userValidation");
-
+const { validationResult } = require("express-validator")
 
 const signUp = asynchandler (async(req,res,next) => {
 
-    let {name,email,password,retypePassword,phone,industry,location} = req.body;
+   let { name, email, password, retypePassword, phone, industry, location } = req.body;
     email = email.trim();
     password = password.trim();
     retypePassword = retypePassword.trim();
@@ -22,50 +22,66 @@ const signUp = asynchandler (async(req,res,next) => {
       await userValidation.validate(req.body)
    } catch(err){
       console.log("All fields are required");
-      return res.json({error:err.message});
+      err.statusCode = 400;
+      return next(err);
+
    }
-      if(!validator.isEmail(email)){
-         return res.json({error:"Email is not correct"});
-      }
+   console.log("afterr")
+   if (!validator.isEmail(email)) {
+      const error = new Error("Email is not correct");
+      error.statusCode = 400;
+      throw error;
+   }
     
-      const retrieveUser = await user.findOne({email});
-      if(retrieveUser){
-         return res.json({error:"Email already exists"})
-      }
-      
-      if(password!=retypePassword){
-         return res.json({error:"Password does not match"})
-      }
+   const retrieveUser = await user.findOne({email});
+   if (retrieveUser) {
+      const error = new Error("Email already exists");
+      error.statusCode = 400;
+      throw error;
+   }
    
-      let avat, cv;
-      if(!req.files['PDF']){
-         return res.send("Your CV is required");
-      }
-      if(!req.files['avatar']){
-         return res.send("Your image is required");
-      }
-      cv = req.files['PDF'][0].path;
-      avat = req.files['avatar'][0].filename;
-      const encryptedPassword = await bcrypt.hash(password,10);
-      const newUser = new user({
-         name,
-         email,
-         password:encryptedPassword,
-         retypePassword:encryptedPassword,
-         phone,
-         industry,
-         location,
-         avatar:avat,
-         cv :cv
-      });
-      const token = await generate({id:newUser._id,email:newUser.email})
-      newUser.token = token;
-      const check = await common.confirmSignUp(email, name);
-      if(check=="error"){
-         return res.send("error in signing up");
-      }
-      newUser.save();
-      return res.json({User : newUser}); 
+   if (password != retypePassword) {
+      const error = new Error("Password does not match");
+      error.statusCode = 400;
+      throw error;
+   }
+
+   let avat, cv;
+   if (!req.files['PDF']) {
+      const error = new Error("Your CV is required");
+      error.statusCode = 400;
+      throw error;
+   }
+   if (!req.files['avatar']) {
+      const error = new Error("Your image is required");
+      error.statusCode = 400;
+      throw error;
+   }
+   cv = req.files['PDF'][0].path;
+   avat = req.files['avatar'][0].filename;
+   const encryptedPassword = await bcrypt.hash(password,10);
+   const newUser = new user({
+      name,
+      email,
+      password:encryptedPassword,
+      retypePassword:encryptedPassword,
+      phone,
+      industry,
+      location,
+      avatar:avat,
+      cv :cv
+   });
+   const token = await generate({id:newUser._id,email:newUser.email})
+   newUser.token = token;
+   const check = await common.confirmSignUp(email, name);
+   if (check == "error") {
+      const error = new Error("error in signing up");
+      error.statusCode = 400;
+      throw error;
+      
+   }
+   newUser.save();
+   return res.json({User : newUser}); 
 })
 
 const signIn = asynchandler (async(req,res,next) => {
@@ -80,11 +96,11 @@ const signIn = asynchandler (async(req,res,next) => {
 
      const retrieveUser = await user.findOne({email:email.toLowerCase()})
      if(!retrieveUser){
-      return res.json({error:"Email is not correct"});
+      return res.status(400).json({error:"Email is not correct"});
      }
      const checkPassword = await bcrypt.compare(password,retrieveUser.password);
      if(!checkPassword){
-       return res.json({error:"Password is not correct"});
+       return res.status(400).json({error:"Password is not correct"});
      }
      const token = await generate({id:retrieveUser._id,email:retrieveUser.email});
      retrieveUser.token = token;
@@ -98,15 +114,15 @@ const changePassword = asynchandler(async(req,res)=>{
    const {email, oldPassword, newPassword, confirmPassword} = req.body;
    const fetchUser = await user.findOne({email});
    if(!email || !validator.isEmail(email)){
-       return res.json({error:"Email is not found"});
+       return res.status(400).json({error:"Email is not found"});
    } 
    const password = fetchUser.password;
    const checkPassword = await bcrypt.compare(oldPassword,password);
    if(!checkPassword){
-      return res.json({error:"Old password is not correct"});
+      return res.status(400).json({error:"Old password is not correct"});
    }
    if(newPassword!==confirmPassword){
-      return res.json({error:"Oops! The passwords you entered don't match. Please try again"});
+      return res.status(401).json({error:"Oops! The passwords you entered don't match. Please try again"});
    }
    const updatedPassword = await bcrypt.hash(newPassword,10);
    const confirmationPassword = await bcrypt.hash(confirmPassword,10);
@@ -144,8 +160,9 @@ const applyJob = asynchandler (async(req,res,next)=>{
 })
 
 const updateInfo = asynchandler(async(req,res,next)=>{
-      let { password, retypePassword, email } = req.body;
-      // console.log("here");
+   let { password, retypePassword, email } = req.body;
+
+      console.log("tototot");
       password = password.trim();
       email = email.trim();
       retypePassword = retypePassword.trim();
@@ -157,7 +174,7 @@ const updateInfo = asynchandler(async(req,res,next)=>{
       req.body.email = email;
       console.log("in user controller",req.current.email);
       await userValidation.validate(req.body)
-      const returnedData = await common.updateModelInfo(user,req.current.id,req.body,res,req.file,req.current.email,req)
+      const returnedData = await common.updateModelInfo(user,req.current.id,req.body,res,req.files['PDF'][0].path, req.files['avatar'][0].filename,req.current.email,req)
       res.send(returnedData)
 })
 
@@ -171,8 +188,7 @@ const checkApplied = asynchandler(async(req,res)=>{
      }
      else{
        res.send.json({
-         state:"didn't apply before",
-         csrfToken : res.csrfToken
+         state:"didn't apply before"
        })
      }
 })

@@ -6,7 +6,6 @@ const crypto = require("crypto")
 const bcrypt = require("bcrypt")
 const nodemailer = require("nodemailer");
 const company = require("../model/company");
-const generate = require("../util/genToken")
 
 const compPerPage = 4, jobPerPage = 4, empPerPage = 6;
 
@@ -48,8 +47,7 @@ const allCompanies = asynchandler (async(req,res)=>{
       allCompanies: allCompanies,
       curPage: page,
       lastPage: lastPage,
-      companies_in_cur_page: returnCompanies,
-      csrfToken : res.csrfToken
+      companies_in_cur_page: returnCompanies
    })
 })
 
@@ -71,8 +69,7 @@ const allJobs = asynchandler(async(req,res)=>{
       allJobs: allJobs,
       curPage: page,
       lastPage: lastPage,
-      jobs_in_cur_page: returnJobs,
-      csrfToken : res.csrfToken
+      jobs_in_cur_page: returnJobs
    })
 })
 
@@ -100,8 +97,7 @@ const getCompany = asynchandler(async(req,res) => {
     const compId = req.params.id;
     const Company =  await company.findOne({_id:compId});
     res.status(200).json({
-      company:Company,
-      csrfToken : res.csrfToken
+      company:Company
     })
 })
 
@@ -109,24 +105,20 @@ const getUser = asynchandler(async(req,res) => {
    const userId = req.params.id;
    const User =  await user.findOne({_id:userId});
    res.status(200).json({
-     user:User,
-     csrfToken : res.csrfToken
+     user:User
    })
 })
 
-async function updateModelInfo(Model, docId, updatedData, res, file, email, req){
+async function updateModelInfo(Model, docId, updatedData, res, cvFile, avatarFile, email, req){
 
     try{
-      //   const checkEmail = await Model.countDocuments({
-      //       email: updatedData.email
-      //   })
-      //   console.log(checkEmail,req.current.email,updatedData.email)
-      //   if(checkEmail==1 && email!=updatedData.email){
-      //       return {error:"This email already exists"}
-      //   }
-        if(file){
-            updatedData.avatar = file.filename;
-        }   
+       if (Model == user) {
+          updatedData.cv = cvFile; 
+        }
+       if (avatarFile) {
+           console.log(avatarFile)
+            updatedData.avatar = avatarFile;
+       }   
        const updatedDocument = await Model.findOneAndUpdate(
             { _id: docId },
             {$set:{...updatedData} },
@@ -196,7 +188,6 @@ const forgertPassword = asynchandler(async(req,res,next)=>{
         {resetToken:resetToken, resetTokenExpiry:Date.now() + 3600000},
         {new:true}
      )
-          console.log(retrieveObject.email)
      if(retrieveObject == undefined){
         return res.status(400).json({error:"User not found"})
      }

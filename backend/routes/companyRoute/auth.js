@@ -3,6 +3,7 @@ const router = express.Router();
 const companyController = require("../../controller/companyController")
 const file = require("../../Middleware/upload")
 const rateLimit = require("express-rate-limit");
+const { check, validationResult } = require("express-validator");
 
 const limiter = rateLimit({
     windowMs: 5 * 60 * 1000,
@@ -41,8 +42,20 @@ const limiter = rateLimit({
     
 })
 
+const validateImage = [
+ 
+  check('avatar').not().exists().withMessage('Image file is required'),
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    next();
+  },
+];
 
-router.post("/companies/signup",limiter,file.upload.single("avatar"),companyController.signUp)
+
+router.post("/companies/signup",validateImage, limiter, file.upload.single("avatar"), validateImage ,companyController.signUp)
 
 router.post("/companies/signin",limiter,companyController.signIn)
 

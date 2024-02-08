@@ -20,17 +20,6 @@ mongoose.connect(url).then(()=>{
 })
 
 
-// const randomTokenMiddleware = (req, res, next) => {
-    
-//     // Generate a random token using uuidv4
-//     const randomToken = uuidv4();
-  
-//     // Add the random token to res.locals for easy access in views and routes
-//     res.csrfToken = randomToken;
-//     console.log("uuidv4", randomToken)
-//     // Continue to the next middleware or route handler
-//     next();
-//   };
 
 
 app.use(express.json({limit:'500kb'}));  // security reason (to limit the req body size)
@@ -39,7 +28,7 @@ app.use('/uploads',express.static(path.join(__dirname,"uploads")));
 
 
 app.use(helmet());  
-// app.use(randomTokenMiddleware);
+
 
 
 app.use(user);
@@ -49,7 +38,8 @@ app.use(companyOperations)
 app.use(userOperation)
 
 app.use(function (err, req, res, next) {
-    res.status(400).json({message: err.message})
+    statusCode = err.statusCode || 500;
+    res.status(statusCode).json({message: err.message})
 })
 
 

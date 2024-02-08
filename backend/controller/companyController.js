@@ -8,8 +8,8 @@ const common = require("../util/common")
 const user = require("../model/user");
 const { companyValidation } = require('../Middleware/companyValidations')
 
-const signUp = asynchandler(async(req,res)=>{
-    let {name,email,password,retypePassword,phone,industry,location,description,foundationYear} = req.body;
+const signUp = asynchandler(async (req, res) => {
+   let { name, email, password, retypePassword, phone, industry, location, description, foundationYear } = req.body;
     email = email.trim();
     password = password.trim();
     retypePassword = retypePassword.trim();
@@ -20,20 +20,20 @@ const signUp = asynchandler(async(req,res)=>{
         await companyValidation.validate(req.body)
      } catch(err){
         console.log("All fields are required");
-        return res.json({error:err.message});
+        return res.status(400).json({error:err.message});
      }
 
      if(!validator.isEmail(email)){
-        return res.json({error:"Email is not correct"});
+        return res.status(400).json({error:"Email is not correct"});
      }
    
      const retrieveCompany = await company.findOne({email});
      if(retrieveCompany){
-        return res.json({error:"Email already exists"})
+        return res.status(400).json({error:"Email already exists"})
      }
 
      if(password!=retypePassword){
-      return res.json({error:"Password does not match"})
+      return res.status(400).json({error:"Password does not match"})
    }
 
 
@@ -71,12 +71,12 @@ const signIn = asynchandler (async(req,res)=>{
 
     const retrieveCompany = await company.findOne({email:email.toLowerCase()});
     if(!retrieveCompany){
-     return res.json({error:"Email is not correct"});
+     return res.status(400).json({error:"Email is not correct"});
     }
 
     const checkPassword = await bcrypt.compare(password,retrieveCompany.password);
     if(!checkPassword){
-      return res.json({error:"Password is not correct"});
+      return res.status(400).json({error:"Password is not correct"});
     }
     const token = await generate({id:retrieveCompany._id,email:retrieveCompany.email});
     retrieveCompany.token = token
@@ -91,15 +91,15 @@ const changePassword = asynchandler(async(req,res)=>{
    const {email, oldPassword, newPassword, confirmPassword} = req.body;
    const fetchCompany = await company.findOne({email});
    if(!email || !validator.isEmail(email)){
-       return res.json({error:"Email is not found"});
+       return res.status(400).json({error:"Email is not found"});
    } 
    const password = fetchCompany.password;
    const checkPassword = await bcrypt.compare(oldPassword,password);
    if(!checkPassword){
-      return res.json({error:"Old password is not correct"});
+      return res.status(400).json({error:"Old password is not correct"});
    }
    if(newPassword!==confirmPassword){
-      return res.json({error:"Oops! The passwords you entered don't match. Please try again"});
+      return res.status(401).json({error:"Oops! The passwords you entered don't match. Please try again"});
    }
    const updatedPassword = await bcrypt.hash(newPassword,10);
    const confirmationPassword = await bcrypt.hash(confirmPassword,10);
@@ -133,7 +133,7 @@ const addJob = asynchandler(async(req,res)=>{
   
 })
 
-const updateInfo = asynchandler (async (req,res) => {
+const updateInfo = asynchandler(async (req, res) => {
    let { password, retypePassword, email } = req.body;
    password = password.trim();
    email = email.trim();
@@ -145,9 +145,9 @@ const updateInfo = asynchandler (async (req,res) => {
    req.body.password = password;
    req.body.retypePassword = retypePassword;
    req.body.email = email;
-   console.log(req.body);
+   console.log(req.file.filename);
    await companyValidation.validate(req.body)
-   const returnedData = await common.updateModelInfo(company,req.current.id,req.body,res,req.file,req.current.email,req)
+   const returnedData = await common.updateModelInfo(company,req.current.id,req.body,res,"",req.file.filename,req.current.email,req)
    res.send(returnedData)
 })
 
@@ -155,8 +155,7 @@ const getJobs = asynchandler(async(req,res)=>{
    const compId = req.current.id;
    const jobs = await job.find({companyId:compId});
    res.status(200).json({
-      jobs:jobs,
-      csrfToken : res.csrfToken
+      jobs:jobs      
    })
 })
 
@@ -168,16 +167,18 @@ const getUsers = asynchandler(async(req,res)=>{
     if(Job!=null){
       employees = Job.employeeIds;
     }
-    res.status(200).json({employees:employees},{
-      csrfToken : res.csrfToken
-    })
+   res.status(200).json(
+      { employees: employees }
+   )
 })
 
 const getAllUsers = asynchandler(async(req,res)=>{
-    const compId = req.current.id;
-    const users = await user.find({companyIds:{$in:compId}})
-    res.json({"All users in current company":users,
-    csrfToken : res.csrfToken})
+    
+   const compId = req.current.id;
+   const users = await user.find({ companyIds: { $in: compId } })
+   res.json({
+      "All users in current company": users,
+    })
 })
 
 const validateUser = asynchandler(async(req,res)=>{
@@ -237,7 +238,7 @@ const viewCv = asynchandler(async(req,res)=>{
     const findJob = await company.findOne({_id:req.current.id , jobIds :{$in : jobId} });
 
     if(!findJob){
-      return res.status(500).send("Not authorized");
+      return res.status(401).send("Not authorized");
     }
     console.log("hereddd");
     user.findOne({_id:userId})
@@ -245,12 +246,11 @@ const viewCv = asynchandler(async(req,res)=>{
       const cvPath = fetchedUser.cv;
       return res.send.json({
          cvPath:cvPath,
-         csrfToken : res.csrfToken
       });
     })
     .catch(err=>{
-      res.send({error:err,
-         csrfToken : res.csrfToken});
+      res.status(400).send({error:err,
+      });
     })
 })
 

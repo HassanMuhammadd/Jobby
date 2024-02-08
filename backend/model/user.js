@@ -35,10 +35,12 @@ const userSchema = new mongoose.Schema ({
     },
     avatar :{
         type:String,
-        default:'/uploads/company-1705777891413.jpeg'
+        // default: '/uploads/company-1705777891413.jpeg',
+        required: true
     },
     cv :{
-        type:String
+        type: String,
+        required: true
     },
     token : {
         type:String,
