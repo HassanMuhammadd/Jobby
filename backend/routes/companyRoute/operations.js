@@ -21,18 +21,18 @@ const validateImage = [
 
 
 
-router.post("/jobs/add", token.verifyToken, companyController.addJob)
+router.post("/jobs", token.verifyToken, companyController.addJob)
 
-router.put("/my-company/update",
+router.put("/company/update/:id",
  file.upload.single("avatar"),validateImage, token.verifyToken, companyController.updateInfo)
 
- router.get("/jobs",token.verifyToken,companyController.getJobs)
+router.get("/jobs",token.verifyToken,companyController.getJobs)
 
-router.get("/appliedUsers/:id",token.verifyToken,companyController.getUsers)
+router.get("/company/users/apply/application/:id",token.verifyToken,companyController.getUsers)
 
-router.put("/jobs/:jobId/applicants/:userId/validateUser",token.verifyToken,companyController.validateUser)
+router.put("/jobs/:jobId/applicants/:userId",token.verifyToken,companyController.userApplication)
 
-router.get("/my-company/users",token.verifyToken,companyController.getAllUsers)
+router.get("/company/users",token.verifyToken,companyController.getAllUsers)
 
 router.get("/jobs/:jobId/applicants/:userId",token.verifyToken,companyController.viewCv)
 

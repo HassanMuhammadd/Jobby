@@ -106,63 +106,41 @@ const signIn = asynchandler (async(req,res,next) => {
      retrieveUser.token = token;
      retrieveUser.save();
      console.log("LoggedIn successfully")
-     res.json({User:retrieveUser})
+     res.status(200).json({User:retrieveUser})
 })
 
-const changePassword = asynchandler(async(req,res)=>{
 
-   const {email, oldPassword, newPassword, confirmPassword} = req.body;
-   const fetchUser = await user.findOne({email});
-   if(!email || !validator.isEmail(email)){
-       return res.status(400).json({error:"Email is not found"});
-   } 
-   const password = fetchUser.password;
-   const checkPassword = await bcrypt.compare(oldPassword,password);
-   if(!checkPassword){
-      return res.status(400).json({error:"Old password is not correct"});
-   }
-   if(newPassword!==confirmPassword){
-      return res.status(401).json({error:"Oops! The passwords you entered don't match. Please try again"});
-   }
-   const updatedPassword = await bcrypt.hash(newPassword,10);
-   const confirmationPassword = await bcrypt.hash(confirmPassword,10);
-   fetchUser.password = updatedPassword;
-   fetchUser.retypePassword = confirmationPassword;
-   fetchUser.save()
-   res.json("updated successfully")
-})
 
-// first time to apply
 const applyJob = asynchandler (async(req,res,next)=>{
    const jobId = (req.params.id);
    const userId = req.current.id;
-   console.log(userId)
-   if(req.file){
-      const newCv = req.file.filename;
+   if (req.file) {
+      const newCv = req.file.path;
       await job.findByIdAndUpdate(
-         {_id: jobId},
+         { _id: jobId },
          {
-            $push: { employeeIds: {userId: userId,newCv:newCv}}
+            $push: { employeeIds: { userId: userId, newCv: newCv } }
          }
       )
+      res.status(200).json("user applied successfully", {
+         user: fetchUser
+      })
     
    }
-   else{
+   else {
       
-      const fetchUser = await user.findOne({_id:userId});
-      console.log(fetchUser)
+      const fetchUser = await user.findOne({ _id: userId });
       await job.findOneAndUpdate(
-         {_id:jobId},
-         { $push: { employeeIds: { userId:userId , newCv:fetchUser.avatar}}}
+         { _id: jobId },
+         { $push: { employeeIds: { userId: userId, newCv: fetchUser.cv } } }
       )
-      res.json(fetchUser)
+      return res.status(202).json({message:"user applied successfully",user: fetchUser})
    }
 })
 
 const updateInfo = asynchandler(async(req,res,next)=>{
    let { password, retypePassword, email } = req.body;
-
-      console.log("tototot");
+   const userId = req.params.id;
       password = password.trim();
       email = email.trim();
       retypePassword = retypePassword.trim();
@@ -172,10 +150,9 @@ const updateInfo = asynchandler(async(req,res,next)=>{
       req.body.password = password;
       req.body.retypePassword = retypePassword;
       req.body.email = email;
-      console.log("in user controller",req.current.email);
       await userValidation.validate(req.body)
-      const returnedData = await common.updateModelInfo(user,req.current.id,req.body,res,req.files['PDF'][0].path, req.files['avatar'][0].filename,req.current.email,req)
-      res.send(returnedData)
+      const returnedData = await common.updateModelInfo(user,userId,req.body,res,req.files['PDF'][0].path, req.files['avatar'][0].filename,req.current.email,req)
+      res.status(200).send(returnedData)
 })
 
 const checkApplied = asynchandler(async(req,res)=>{
@@ -184,10 +161,10 @@ const checkApplied = asynchandler(async(req,res)=>{
      const check = await job.find({'employeeIds.userId':id,_id:jobId})  
      console.log("check is ",check[0])
      if(check[0]){
-      res.send("already applied")
+      res.status(200).send("already applied")
      }
      else{
-       res.send.json({
+       res.status(400).json({
          state:"didn't apply before"
        })
      }
@@ -197,7 +174,6 @@ const checkApplied = asynchandler(async(req,res)=>{
 module.exports = {
     signUp,
     signIn,
-    changePassword,
     applyJob,
     updateInfo,
     checkApplied

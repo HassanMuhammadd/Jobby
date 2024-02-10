@@ -15,7 +15,8 @@ const transporter = nodemailer.createTransport({
     port: 465,
     secure: true,
     auth: {
- 
+       user: "boodyahmed825@gmail.com",
+       pass:"wvzi twzq sfuj gqqt"
     },
   });
 
@@ -128,47 +129,29 @@ async function updateModelInfo(Model, docId, updatedData, res, cvFile, avatarFil
          return updatedDocument
     }
     catch(err){
-        res.send({error:err.message});
+        res.status(400).send({error:err.message});
     }
 }
 
-async function updateStatus(jId, uId, status) {
-     
-    const userId = uId;
-    const jobId = jId;
-    const updateStatus = await job.findOneAndUpdate(
-      {
-         _id: (jobId),
-         'employeeIds.userId': userId
-      },
-      {
-         $set:{'employeeIds.$.status':status}
-      }, 
-      {
-         new:true
-      }
-    )
-    return updateStatus
-}
+
 
 
 
 async function confirmSignUp(email,name){
-   //  let mailOptions = {
-   //      from: "shopify@gmail.com",
-   //      to:email,
-   //      subject:"Sign up successful",
-   //      text: `Hello ${name}, \n\n Welcome to our platform! You have successfully signed up.  `
-   //   }
-   //   console.log(email)
-   //   try {
-   //      const info = await transporter.sendMail(mailOptions);
-   //      console.log({ message: 'Signup successful. Welcome email sent.' });
-   //      return "succeeded";
-   //    } catch (error) {
-   //      console.log({ error: 'Error sending welcome email.' ,error});
-   //      return "error";
-   //    }
+    let mailOptions = {
+        from: "shopify@gmail.com",
+        to:email,
+        subject:"Sign up successful",
+        text: `Hello ${name}, \n\n Welcome to our platform! You have successfully signed up.  `
+     }
+     try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log({ message: 'Signup successful. Welcome email sent.' });
+        return "succeeded";
+      } catch (error) {
+        console.log({ error: 'Error sending welcome email.' ,error});
+        return "error";
+      }
 }
 
 const forgertPassword = asynchandler(async(req,res,next)=>{
@@ -229,7 +212,7 @@ const resetPassword = asynchandler(async(req,res,next)=>{
         }
      )
      if(!checkUser){
-        return res.send("Error while reseting password");
+        return res.status(400).send("Error while reseting password");
      }
      const hashedPassword = await bcrypt.hash(password,10);
      checkUser.password = hashedPassword;
@@ -238,7 +221,7 @@ const resetPassword = asynchandler(async(req,res,next)=>{
      checkUser.resetTokenExpiry = '';
 
      checkUser.save();
-     res.send("password updated successfully");
+     res.status(200).send("password updated successfully");
 
 })
 
@@ -247,7 +230,6 @@ const resetPassword = asynchandler(async(req,res,next)=>{
 module.exports = {
     allCompanies,
     updateModelInfo,
-    updateStatus,
     allJobs,
     allUsers,
     confirmSignUp,

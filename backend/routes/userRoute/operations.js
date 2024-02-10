@@ -22,12 +22,12 @@ const validateCVAndImage = [
 
 router.post("/jobs/apply/:id",file.upload.single("avatar"),token.verifyToken,user.applyJob)
 
-router.put("/user/update"
+router.put("/user/update/:id"
   , file.upload.fields([{ name: 'avatar', maxCount: 1 }, { name: 'PDF', maxCount: 1 }]),
   validateCVAndImage, token.verifyToken, user.updateInfo)
 
 // router.put("/updateUserData",file.upload.single("avatar"),token.verifyToken,user.updateInfo)
 
-router.get("/checkaApply/:id",token.verifyToken,user.checkApplied)
+router.get("/jobs/:id/application",token.verifyToken,user.checkApplied)
 
 module.exports = router

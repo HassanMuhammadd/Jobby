@@ -43,7 +43,6 @@ const limiter = rateLimit({
 })
 
 const validateImage = [
- 
   check('avatar').not().exists().withMessage('Image file is required'),
   (req, res, next) => {
     const errors = validationResult(req);
@@ -55,10 +54,9 @@ const validateImage = [
 ];
 
 
-router.post("/companies/signup",validateImage, limiter, file.upload.single("avatar"), validateImage ,companyController.signUp)
+router.post("/companies/signup", limiter, file.upload.single("avatar"), validateImage ,companyController.signUp)
 
 router.post("/companies/signin",limiter,companyController.signIn)
 
-router.put("/companies/change-password",companyController.changePassword)
 
 module.exports = router;

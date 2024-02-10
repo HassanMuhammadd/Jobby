@@ -63,8 +63,6 @@ router.post("/users/signup",
   validateCVAndImage,
                                                {name:'PDF' , maxCount:1}]),userController.signUp)
 
-// same name request from frontend
-router.put("/users/change-password",userController.changePassword)
 
 
 

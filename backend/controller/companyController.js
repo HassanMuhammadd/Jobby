@@ -58,7 +58,7 @@ const signUp = asynchandler(async (req, res) => {
         return res.send("error in signing up");
      }
      newCompany.save();
-     res.json({Company : newCompany}); 
+     res.status(200).json({Company : newCompany}); 
 })
 
 const signIn = asynchandler (async(req,res)=>{
@@ -66,7 +66,7 @@ const signIn = asynchandler (async(req,res)=>{
     email = email.trim();
     password = password.trim();
     if(!email || !validator.isEmail(email)){
-       return res.json({error:"Email is not correct"});
+       return res.status(400).json({error:"Email is not correct"});
     }
 
     const retrieveCompany = await company.findOne({email:email.toLowerCase()});
@@ -82,32 +82,10 @@ const signIn = asynchandler (async(req,res)=>{
     retrieveCompany.token = token
     retrieveCompany.save()
     console.log("LoggedIn successfully")
-    res.json({Company:retrieveCompany})
+    res.status(200).json({Company:retrieveCompany})
 
 })
 
-const changePassword = asynchandler(async(req,res)=>{
-
-   const {email, oldPassword, newPassword, confirmPassword} = req.body;
-   const fetchCompany = await company.findOne({email});
-   if(!email || !validator.isEmail(email)){
-       return res.status(400).json({error:"Email is not found"});
-   } 
-   const password = fetchCompany.password;
-   const checkPassword = await bcrypt.compare(oldPassword,password);
-   if(!checkPassword){
-      return res.status(400).json({error:"Old password is not correct"});
-   }
-   if(newPassword!==confirmPassword){
-      return res.status(401).json({error:"Oops! The passwords you entered don't match. Please try again"});
-   }
-   const updatedPassword = await bcrypt.hash(newPassword,10);
-   const confirmationPassword = await bcrypt.hash(confirmPassword,10);
-   fetchCompany.password = updatedPassword;
-   fetchCompany.retypePassword = confirmationPassword;
-   fetchCompany.save()
-   res.json("updated successfully")
-})
 
 const addJob = asynchandler(async(req,res)=>{
    const {name,category,salary,location,description,experience,type} = req.body;
@@ -129,12 +107,13 @@ const addJob = asynchandler(async(req,res)=>{
       {$push:{jobIds:newJob._id}}
    )
   
-   res.json("Job added succesffully");
+   res.status(200).json("Job added succesffully");
   
 })
 
 const updateInfo = asynchandler(async (req, res) => {
    let { password, retypePassword, email } = req.body;
+   const compId = req.params.id;
    password = password.trim();
    email = email.trim();
    retypePassword = retypePassword.trim();
@@ -145,10 +124,9 @@ const updateInfo = asynchandler(async (req, res) => {
    req.body.password = password;
    req.body.retypePassword = retypePassword;
    req.body.email = email;
-   console.log(req.file.filename);
    await companyValidation.validate(req.body)
-   const returnedData = await common.updateModelInfo(company,req.current.id,req.body,res,"",req.file.filename,req.current.email,req)
-   res.send(returnedData)
+   const returnedData = await common.updateModelInfo(company, compId, req.body, res, "", req.file.filename, req.current.email, req)
+   res.status(200).send(returnedData)
 })
 
 const getJobs = asynchandler(async(req,res)=>{
@@ -181,22 +159,32 @@ const getAllUsers = asynchandler(async(req,res)=>{
     })
 })
 
-const validateUser = asynchandler(async(req,res)=>{
+
+async function updateStatus(jId, uId, status) {
+     
+    const userId = uId;
+    const jobId = jId;
+    const updateStatus = await job.findOneAndUpdate(
+      {
+         _id: (jobId),
+         'employeeIds.userId': userId
+      },
+      {
+         $set:{'employeeIds.$.status':status}
+      }, 
+      {
+         new:true
+      }
+    )
+    return updateStatus
+}
+
+const userApplication = asynchandler(async(req,res)=>{
     const userId = req.params.userId;
     const jobId = req.params.jobId;
     const status = req.body.status;
-    const updatedUser = await common.updateStatus(jobId, userId, status);
+    const updatedUser = await updateStatus(jobId, userId, status);
     if(status=="rejected"){
-      console.log("heereee")
-      await job.updateOne(
-         {
-             _id:jobId
-         },
-         {
-            $pull:{employeeIds:{userId: userId}}
-         }
-      )
-
       return res.send("status updated => rejected")
     }
    //  res.status(200).json(updatedUser)
@@ -244,7 +232,7 @@ const viewCv = asynchandler(async(req,res)=>{
     user.findOne({_id:userId})
     .then(fetchedUser=>{
       const cvPath = fetchedUser.cv;
-      return res.send.json({
+      return res.status(200).send.json({
          cvPath:cvPath,
       });
     })
@@ -259,12 +247,12 @@ const viewCv = asynchandler(async(req,res)=>{
 module.exports = {
     signUp,
     signIn,
-    changePassword,
     addJob,
     updateInfo,
     getJobs,
     getUsers,
-    validateUser,
+    userApplication,
     getAllUsers,
-    viewCv
+    viewCv,
+    updateStatus
 }
